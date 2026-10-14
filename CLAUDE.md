@@ -16,19 +16,19 @@ Reminds San Francisco drivers before street cleaning on the block where they par
 
 ## Stack
 
-Not chosen yet. Provisioning fills this in when the repository already answers
-it - a manifest, a lockfile, code that is already here - and leaves this
-sentence standing when it does not. A greenfield repository is asked for its
-stack before anybody could know it, and a guess written here reads exactly like
-a decision somebody made.
+Swift 6, chosen in `docs/decisions/0001-native-ios-app-with-shortcuts-capture.md`:
 
-Choosing it changes a category, so it arrives as an ADR under
-`docs/decisions/`, and this section is rewritten in the same pull request.
+- **Core.** A Foundation-only SwiftPM package holds the schedule, holiday and
+  side-of-street logic, and the gate builds and tests it on Linux.
+- **App.** A SwiftUI iOS app on the paid Apple Developer account, with a Lock
+  Screen widget. Parking is captured by an iOS Shortcuts automation that calls
+  the app's App Intent. Reminders are local notifications on the phone, with no
+  server.
+- **Publishing.** Xcode Cloud builds the app to TestFlight. The gate does not
+  run that build, and ADR 0001 records why and what covers the gap.
 
-Nothing publishes this repository yet either. When something does, the question
-that matters is whether the gate runs what publishes it - the comment at the
-top of `.github/workflows/ci.yml` asks it at the moment it becomes answerable,
-which is the moment somebody replaces the gate.
+The app target, the capture trigger and delivery under Focus can only be checked
+on the device, so #7's device checklist is the gate for those.
 
 ## Commands
 
