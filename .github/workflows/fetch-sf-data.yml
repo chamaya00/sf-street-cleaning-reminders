@@ -1,0 +1,80 @@
+name: fetch-sf-data
+
+# One-off fetch of San Francisco's street sweeping schedule (DataSF dataset
+# yhqp-riqs) for research #3 and the snapshot fixture #4 builds on. The
+# driving session's sandbox may not reach the city's portal, so the requests
+# listed in docs/research/3-parking-capture-and-reminders.md section 4.7 run
+# here instead, and the raw responses are committed to the data/sf-street-sweeping
+# branch, which holds nothing but this data.
+#
+# It runs only on the pull request that adds it. It uses no third-party
+# actions: curl, jq and git from the runner image.
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/fetch-sf-data.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Fetch the dataset
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir out && cd out
+          host=data.sfgov.org
+          base="https://$host/resource/yhqp-riqs.json"
+          fetch() { # name, then curl args
+            local name="$1"; shift
+            curl -sS -L --retry 3 -D "$name.headers" -o "$name.body" "$@"
+            echo "== $name: $(grep -i '^HTTP/' "$name.headers" | tr -d '\r' | paste -sd' ' -)"
+          }
+          fetch 1-metadata "https://$host/api/views/yhqp-riqs.json"
+          fetch 2-sample5 -G "$base" --data-urlencode '$limit=5'
+          fetch 3-week-patterns -G "$base" \
+            --data-urlencode '$select=week1,week2,week3,week4,week5,count(*) AS n' \
+            --data-urlencode '$group=week1,week2,week3,week4,week5' \
+            --data-urlencode '$order=n DESC'
+          fetch 4-holidays-hours -G "$base" \
+            --data-urlencode '$select=holidays,fromhour,tohour,count(*) AS n' \
+            --data-urlencode '$group=holidays,fromhour,tohour' \
+            --data-urlencode '$order=n DESC'
+          cnn="$(jq -r '.[0].cnn' 2-sample5.body)"
+          fetch 5-one-block-both-sides -G "$base" --data-urlencode "\$where=cnn='$cnn'"
+          if ! jq -e 'type == "array" and length > 0' 5-one-block-both-sides.body >/dev/null; then
+            fetch 5-one-block-both-sides -G "$base" --data-urlencode "\$where=cnn=$cnn"
+          fi
+          fetch 6-full-table "https://$host/api/views/yhqp-riqs/rows.csv?accessType=DOWNLOAD"
+          {
+            echo "# DataSF street sweeping schedule (yhqp-riqs), raw responses"
+            echo
+            echo "Retrieved: $(date -u +%Y-%m-%dT%H:%M:%SZ) by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "Requested host: $host (curl -L, so redirects are followed and recorded in each .headers file)"
+            echo "rowsUpdatedAt (from 1-metadata): $(jq -r '.rowsUpdatedAt // "n/a"' 1-metadata.body)"
+            echo "CNN used for request 5: $cnn"
+            echo "Rows in 6-full-table (excluding header): $(($(wc -l < 6-full-table.body) - 1))"
+            echo
+            echo "Each request is in docs/research/3-parking-capture-and-reminders.md section 4.7."
+          } > README.md
+          cat README.md
+          echo "== sample record"; jq '.[0]' 2-sample5.body | head -60
+          ls -la
+      - name: Commit to the data branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd out
+          git init -q -b data/sf-street-sweeping
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "DataSF yhqp-riqs raw responses, run $GITHUB_RUN_ID"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data/sf-street-sweeping
