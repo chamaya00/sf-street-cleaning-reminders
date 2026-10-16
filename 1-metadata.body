@@ -1,0 +1,921 @@
+{
+  "id" : "yhqp-riqs",
+  "name" : "Street Sweeping Schedule",
+  "assetType" : "dataset",
+  "attribution" : "San Francisco Public Works",
+  "attributionLink" : "http://www.sfdpw.org",
+  "averageRating" : 0,
+  "category" : "City Infrastructure",
+  "createdAt" : 1578422960,
+  "description" : "<strong>A. SUMMARY</strong>\nMechanical street sweeping and street cleaning schedule managed by San Francisco Public Works.\n\n<strong>B. HOW THE DATASET IS CREATED</strong>\nThis dataset is created by extracting all street sweeping schedule data from a Department of Public Works database, it is then geocoded to add common identifiers such as Centerline Network Number (\"CNN\") then published to the open data portal.\n\n<strong>C. UPDATE PROCESS</strong>\nThis dataset will be updated on an 'as needed' basis, when sweeping schedules change.\n\n<strong>D. HOW TO USE THIS DATASET</strong>\nUse this dataset to understand, track, or analyze street sweeping in San Francisco.\n\n<strong>Please note that bike lane sweeping is not included in this dataset.</strong>\nPublic Works maintains a route book for bike lane sweeping, but the schedule is not as specific as regular street sweeping.  Sweeping may occur any day of the week during the following timeframes:\n(1) 6:00 p.m. to 1:00 a.m.\n(2) 12:00 a.m. to 7:00 a.m.\n\nActual service may vary depending on staffing, equipment availability, and operational needs.",
+  "diciBackend" : false,
+  "displayType" : "table",
+  "domainCName" : "data.sf.gov",
+  "downloadCount" : 26741,
+  "hideFromCatalog" : false,
+  "hideFromDataJson" : false,
+  "licenseId" : "PDDL",
+  "locked" : false,
+  "newBackend" : true,
+  "numberOfComments" : 0,
+  "oid" : 41076118,
+  "provenance" : "official",
+  "publicationAppendEnabled" : true,
+  "publicationDate" : 1738000541,
+  "publicationGroup" : 16821082,
+  "publicationStage" : "published",
+  "rowsUpdatedAt" : 1778758589,
+  "rowsUpdatedBy" : "hf8p-vup5",
+  "tableId" : 19749914,
+  "totalTimesRated" : 0,
+  "viewCount" : 97254,
+  "viewLastModified" : 1792070128,
+  "viewType" : "tabular",
+  "approvals" : [ {
+    "reviewedAt" : 1741024729,
+    "reviewedAutomatically" : false,
+    "state" : "approved",
+    "submissionId" : 6777664,
+    "submissionObject" : "public_audience_request",
+    "submissionOutcome" : "change_audience",
+    "submittedAt" : 1741024720,
+    "targetAudience" : "public",
+    "workflowId" : 2546,
+    "reviewer" : {
+      "id" : "7zrh-3i2w",
+      "displayName" : "Dan Tonkovich"
+    },
+    "submissionDetails" : {
+      "permissionType" : "read"
+    },
+    "submissionOutcomeApplication" : {
+      "endedAt" : 1741024729,
+      "failureCount" : 0,
+      "startedAt" : 1741024729,
+      "status" : "success"
+    },
+    "submitter" : {
+      "id" : "7zrh-3i2w",
+      "displayName" : "Dan Tonkovich"
+    }
+  }, {
+    "message" : "The `strict_permissions` flag must be on to enable internal approvals.",
+    "state" : "unsubmittable",
+    "targetAudience" : "internal",
+    "workflowId" : 5264
+  } ],
+  "clientContext" : {
+    "clientContextVariables" : [ ],
+    "inheritedVariables" : { }
+  },
+  "columns" : [ {
+    "id" : 604564237,
+    "name" : "CNN",
+    "dataTypeName" : "text",
+    "description" : "Centerline network number – unique identifier for every street segment in CCSF basemap",
+    "fieldName" : "cnn",
+    "position" : 1,
+    "renderTypeName" : "text",
+    "tableColumnId" : 156465886,
+    "width" : 405,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "9999000",
+      "null" : "0",
+      "top" : [ {
+        "item" : "9131000",
+        "count" : "26"
+      }, {
+        "item" : "9136000",
+        "count" : "26"
+      }, {
+        "item" : "9137000",
+        "count" : "26"
+      }, {
+        "item" : "9146000",
+        "count" : "26"
+      }, {
+        "item" : "9140000",
+        "count" : "26"
+      }, {
+        "item" : "9132000",
+        "count" : "26"
+      }, {
+        "item" : "9130000",
+        "count" : "26"
+      }, {
+        "item" : "9139000",
+        "count" : "26"
+      }, {
+        "item" : "9135000",
+        "count" : "26"
+      }, {
+        "item" : "9145000",
+        "count" : "26"
+      }, {
+        "item" : "9129000",
+        "count" : "26"
+      }, {
+        "item" : "9133000",
+        "count" : "26"
+      }, {
+        "item" : "9144000",
+        "count" : "26"
+      }, {
+        "item" : "9134000",
+        "count" : "26"
+      }, {
+        "item" : "9138000",
+        "count" : "26"
+      }, {
+        "item" : "172000",
+        "count" : "16"
+      }, {
+        "item" : "6395000",
+        "count" : "16"
+      }, {
+        "item" : "9157000",
+        "count" : "16"
+      }, {
+        "item" : "3154000",
+        "count" : "16"
+      }, {
+        "item" : "9089000",
+        "count" : "16"
+      } ],
+      "smallest" : "100000",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : {
+      "noCommas" : "true"
+    }
+  }, {
+    "id" : 604564221,
+    "name" : "Corridor",
+    "dataTypeName" : "text",
+    "description" : "Street Name",
+    "fieldName" : "corridor",
+    "position" : 2,
+    "renderTypeName" : "text",
+    "tableColumnId" : 93289618,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "Zoe St",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Mission St",
+        "count" : "2024"
+      }, {
+        "item" : "03rd St",
+        "count" : "1094"
+      }, {
+        "item" : "Market St",
+        "count" : "920"
+      }, {
+        "item" : "Geary Blvd",
+        "count" : "568"
+      }, {
+        "item" : "Van Ness Ave",
+        "count" : "524"
+      }, {
+        "item" : "Ocean Ave",
+        "count" : "361"
+      }, {
+        "item" : "The Embarcadero",
+        "count" : "351"
+      }, {
+        "item" : "16th St",
+        "count" : "345"
+      }, {
+        "item" : "Fillmore St",
+        "count" : "327"
+      }, {
+        "item" : "Kearny St",
+        "count" : "314"
+      }, {
+        "item" : "Taraval St",
+        "count" : "294"
+      }, {
+        "item" : "Folsom St",
+        "count" : "285"
+      }, {
+        "item" : "Broadway",
+        "count" : "285"
+      }, {
+        "item" : "Judah St",
+        "count" : "285"
+      }, {
+        "item" : "Clement St",
+        "count" : "278"
+      }, {
+        "item" : "Noriega St",
+        "count" : "266"
+      }, {
+        "item" : "Sloat Blvd",
+        "count" : "262"
+      }, {
+        "item" : "Fulton St",
+        "count" : "260"
+      }, {
+        "item" : "Columbus Ave",
+        "count" : "259"
+      }, {
+        "item" : "Harrison St",
+        "count" : "257"
+      } ],
+      "smallest" : "01st St",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564222,
+    "name" : "Limits",
+    "dataTypeName" : "text",
+    "description" : "From / To Streets",
+    "fieldName" : "limits",
+    "position" : 3,
+    "renderTypeName" : "text",
+    "tableColumnId" : 93289605,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "Zoe St  -  04th St",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Larkin St  -  Polk St",
+        "count" : "188"
+      }, {
+        "item" : "Polk St  -  Van Ness Ave",
+        "count" : "185"
+      }, {
+        "item" : "Washington St  -  Jackson St",
+        "count" : "131"
+      }, {
+        "item" : "Pine St  -  California St",
+        "count" : "128"
+      }, {
+        "item" : "Geary Blvd  -  Anza St",
+        "count" : "124"
+      }, {
+        "item" : "18th St  -  19th St",
+        "count" : "121"
+      }, {
+        "item" : "Mason St  -  Taylor St",
+        "count" : "113"
+      }, {
+        "item" : "Van Ness Ave  -  Franklin St",
+        "count" : "113"
+      }, {
+        "item" : "Clay St  -  Washington St",
+        "count" : "112"
+      }, {
+        "item" : "Balboa St  -  Cabrillo St",
+        "count" : "112"
+      }, {
+        "item" : "Cabrillo St  -  Fulton St",
+        "count" : "112"
+      }, {
+        "item" : "16th St  -  17th St",
+        "count" : "110"
+      }, {
+        "item" : "Franklin St  -  Gough St",
+        "count" : "108"
+      }, {
+        "item" : "Lombard St  -  Chestnut St",
+        "count" : "108"
+      }, {
+        "item" : "24th St  -  25th St",
+        "count" : "108"
+      }, {
+        "item" : "Sacramento St  -  Clay St",
+        "count" : "106"
+      }, {
+        "item" : "Irving St  -  Judah St",
+        "count" : "105"
+      }, {
+        "item" : "California St  -  Sacramento St",
+        "count" : "105"
+      }, {
+        "item" : "22nd St  -  23rd St",
+        "count" : "104"
+      }, {
+        "item" : "Webster St  -  Fillmore St",
+        "count" : "104"
+      } ],
+      "smallest" : "01st St  -  02nd St",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564223,
+    "name" : "CNNRightLeft",
+    "dataTypeName" : "text",
+    "description" : "Side of Street Swept (L=Left, R=Right)",
+    "fieldName" : "cnnrightleft",
+    "position" : 4,
+    "renderTypeName" : "text",
+    "tableColumnId" : 93289617,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "R",
+      "null" : "0",
+      "top" : [ {
+        "item" : "R",
+        "count" : "19183"
+      }, {
+        "item" : "L",
+        "count" : "18695"
+      } ],
+      "smallest" : "L",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564224,
+    "name" : "BlockSide",
+    "dataTypeName" : "text",
+    "description" : "Cardinal Side of Street (North, South, etc.)",
+    "fieldName" : "blockside",
+    "position" : 5,
+    "renderTypeName" : "text",
+    "tableColumnId" : 93289616,
+    "cachedContents" : {
+      "non_null" : "37039",
+      "largest" : "West",
+      "null" : "839",
+      "top" : [ {
+        "item" : "North",
+        "count" : "7036"
+      }, {
+        "item" : "South",
+        "count" : "6837"
+      }, {
+        "item" : "West",
+        "count" : "6771"
+      }, {
+        "item" : "East",
+        "count" : "6199"
+      }, {
+        "item" : "NorthWest",
+        "count" : "2820"
+      }, {
+        "item" : "SouthEast",
+        "count" : "2643"
+      }, {
+        "item" : "SouthWest",
+        "count" : "2489"
+      }, {
+        "item" : "NorthEast",
+        "count" : "2244"
+      } ],
+      "smallest" : "East",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564225,
+    "name" : "FullName",
+    "dataTypeName" : "text",
+    "description" : "Full Name of day of the Week or abbreviated day of week + week of the month serviced",
+    "fieldName" : "fullname",
+    "position" : 6,
+    "renderTypeName" : "text",
+    "tableColumnId" : 93289615,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "Wednesday",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Wednesday",
+        "count" : "4369"
+      }, {
+        "item" : "Thursday",
+        "count" : "4072"
+      }, {
+        "item" : "Tuesday",
+        "count" : "4063"
+      }, {
+        "item" : "Friday",
+        "count" : "4002"
+      }, {
+        "item" : "Monday",
+        "count" : "3967"
+      }, {
+        "item" : "Mon 2nd & 4th",
+        "count" : "1673"
+      }, {
+        "item" : "Tue 2nd & 4th",
+        "count" : "1434"
+      }, {
+        "item" : "Thu 2nd & 4th",
+        "count" : "1356"
+      }, {
+        "item" : "Saturday",
+        "count" : "1340"
+      }, {
+        "item" : "Fri 2nd & 4th",
+        "count" : "1272"
+      }, {
+        "item" : "Sunday",
+        "count" : "1271"
+      }, {
+        "item" : "Wed 2nd & 4th",
+        "count" : "1145"
+      }, {
+        "item" : "Mon 1st & 3rd",
+        "count" : "1059"
+      }, {
+        "item" : "Fri 1st & 3rd",
+        "count" : "907"
+      }, {
+        "item" : "Wed 1st & 3rd",
+        "count" : "886"
+      }, {
+        "item" : "HOLIDAY",
+        "count" : "824"
+      }, {
+        "item" : "Thu 1st & 3rd",
+        "count" : "763"
+      }, {
+        "item" : "Tue 1st & 3rd",
+        "count" : "752"
+      }, {
+        "item" : "Tue 1st, 3rd, 5th",
+        "count" : "546"
+      }, {
+        "item" : "Thu 1st, 3rd, 5th",
+        "count" : "517"
+      } ],
+      "smallest" : "Fri 1st",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564226,
+    "name" : "WeekDay",
+    "dataTypeName" : "text",
+    "description" : "Abbreviated day of week serviced",
+    "fieldName" : "weekday",
+    "position" : 7,
+    "renderTypeName" : "text",
+    "tableColumnId" : 93289614,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "Wed",
+      "null" : "0",
+      "top" : [ {
+        "item" : "Mon",
+        "count" : "7182"
+      }, {
+        "item" : "Tues",
+        "count" : "6891"
+      }, {
+        "item" : "Wed",
+        "count" : "6809"
+      }, {
+        "item" : "Thu",
+        "count" : "6798"
+      }, {
+        "item" : "Fri",
+        "count" : "6763"
+      }, {
+        "item" : "Sat",
+        "count" : "1340"
+      }, {
+        "item" : "Sun",
+        "count" : "1271"
+      }, {
+        "item" : "Holiday",
+        "count" : "824"
+      } ],
+      "smallest" : "Fri",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564227,
+    "name" : "FromHour",
+    "dataTypeName" : "number",
+    "description" : "Start hour of service in 24 hour format",
+    "fieldName" : "fromhour",
+    "position" : 8,
+    "renderTypeName" : "number",
+    "tableColumnId" : 93289613,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "13",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2",
+        "count" : "5878"
+      }, {
+        "item" : "8",
+        "count" : "4849"
+      }, {
+        "item" : "6",
+        "count" : "4466"
+      }, {
+        "item" : "7",
+        "count" : "4310"
+      }, {
+        "item" : "9",
+        "count" : "4099"
+      }, {
+        "item" : "12",
+        "count" : "4078"
+      }, {
+        "item" : "0",
+        "count" : "3390"
+      }, {
+        "item" : "4",
+        "count" : "2161"
+      }, {
+        "item" : "5",
+        "count" : "1388"
+      }, {
+        "item" : "13",
+        "count" : "1386"
+      }, {
+        "item" : "10",
+        "count" : "805"
+      }, {
+        "item" : "11",
+        "count" : "743"
+      }, {
+        "item" : "3",
+        "count" : "172"
+      }, {
+        "item" : "1",
+        "count" : "153"
+      } ],
+      "smallest" : "0",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564228,
+    "name" : "ToHour",
+    "dataTypeName" : "number",
+    "description" : "End hour of service in 24 hour format",
+    "fieldName" : "tohour",
+    "position" : 9,
+    "renderTypeName" : "number",
+    "tableColumnId" : 93289612,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "15",
+      "null" : "0",
+      "top" : [ {
+        "item" : "6",
+        "count" : "9967"
+      }, {
+        "item" : "8",
+        "count" : "7783"
+      }, {
+        "item" : "11",
+        "count" : "4667"
+      }, {
+        "item" : "10",
+        "count" : "4210"
+      }, {
+        "item" : "14",
+        "count" : "3560"
+      }, {
+        "item" : "15",
+        "count" : "1953"
+      }, {
+        "item" : "2",
+        "count" : "1710"
+      }, {
+        "item" : "7",
+        "count" : "1262"
+      }, {
+        "item" : "9",
+        "count" : "950"
+      }, {
+        "item" : "12",
+        "count" : "756"
+      }, {
+        "item" : "13",
+        "count" : "743"
+      }, {
+        "item" : "5",
+        "count" : "181"
+      }, {
+        "item" : "3",
+        "count" : "114"
+      }, {
+        "item" : "4",
+        "count" : "22"
+      } ],
+      "smallest" : "2",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564229,
+    "name" : "Week1",
+    "dataTypeName" : "number",
+    "description" : "1= serviced on the first week of the month",
+    "fieldName" : "week1",
+    "position" : 10,
+    "renderTypeName" : "number",
+    "tableColumnId" : 95809773,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "1",
+      "null" : "0",
+      "top" : [ {
+        "item" : "1",
+        "count" : "30664"
+      }, {
+        "item" : "0",
+        "count" : "7214"
+      } ],
+      "smallest" : "0",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564230,
+    "name" : "Week2",
+    "dataTypeName" : "number",
+    "description" : "1= serviced on the second week of the month",
+    "fieldName" : "week2",
+    "position" : 11,
+    "renderTypeName" : "number",
+    "tableColumnId" : 95809775,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "1",
+      "null" : "0",
+      "top" : [ {
+        "item" : "1",
+        "count" : "31122"
+      }, {
+        "item" : "0",
+        "count" : "6756"
+      } ],
+      "smallest" : "0",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564231,
+    "name" : "Week3",
+    "dataTypeName" : "number",
+    "description" : "1= serviced on the third week of the month",
+    "fieldName" : "week3",
+    "position" : 12,
+    "renderTypeName" : "number",
+    "tableColumnId" : 95809771,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "1",
+      "null" : "0",
+      "top" : [ {
+        "item" : "1",
+        "count" : "30562"
+      }, {
+        "item" : "0",
+        "count" : "7316"
+      } ],
+      "smallest" : "0",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564232,
+    "name" : "Week4",
+    "dataTypeName" : "number",
+    "description" : "1= serviced on the fourth week of the month",
+    "fieldName" : "week4",
+    "position" : 13,
+    "renderTypeName" : "number",
+    "tableColumnId" : 95809774,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "1",
+      "null" : "0",
+      "top" : [ {
+        "item" : "1",
+        "count" : "31122"
+      }, {
+        "item" : "0",
+        "count" : "6756"
+      } ],
+      "smallest" : "0",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564233,
+    "name" : "Week5",
+    "dataTypeName" : "number",
+    "description" : "1= serviced on the fifth week of the month",
+    "fieldName" : "week5",
+    "position" : 14,
+    "renderTypeName" : "number",
+    "tableColumnId" : 95809772,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "1",
+      "null" : "0",
+      "top" : [ {
+        "item" : "1",
+        "count" : "26529"
+      }, {
+        "item" : "0",
+        "count" : "11349"
+      } ],
+      "smallest" : "0",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564234,
+    "name" : "Holidays",
+    "dataTypeName" : "number",
+    "description" : "1= swept on holidays",
+    "fieldName" : "holidays",
+    "position" : 15,
+    "renderTypeName" : "number",
+    "tableColumnId" : 93289607,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "1",
+      "null" : "0",
+      "top" : [ {
+        "item" : "0",
+        "count" : "35145"
+      }, {
+        "item" : "1",
+        "count" : "2733"
+      } ],
+      "smallest" : "0",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : { }
+  }, {
+    "id" : 604564235,
+    "name" : "BlockSweepID",
+    "dataTypeName" : "number",
+    "description" : "Unique ID for this dataset",
+    "fieldName" : "blocksweepid",
+    "position" : 16,
+    "renderTypeName" : "number",
+    "tableColumnId" : 93289619,
+    "cachedContents" : {
+      "non_null" : "37878",
+      "largest" : "1646999",
+      "null" : "0",
+      "top" : [ {
+        "item" : "1615334",
+        "count" : "1"
+      }, {
+        "item" : "1604872",
+        "count" : "1"
+      }, {
+        "item" : "1602441",
+        "count" : "1"
+      }, {
+        "item" : "1635055",
+        "count" : "1"
+      }, {
+        "item" : "1635298",
+        "count" : "1"
+      }, {
+        "item" : "1621184",
+        "count" : "1"
+      }, {
+        "item" : "1608006",
+        "count" : "1"
+      }, {
+        "item" : "1619324",
+        "count" : "1"
+      }, {
+        "item" : "1606788",
+        "count" : "1"
+      }, {
+        "item" : "1608908",
+        "count" : "1"
+      }, {
+        "item" : "1633878",
+        "count" : "1"
+      }, {
+        "item" : "1640911",
+        "count" : "1"
+      }, {
+        "item" : "1626373",
+        "count" : "1"
+      }, {
+        "item" : "1607440",
+        "count" : "1"
+      }, {
+        "item" : "1606029",
+        "count" : "1"
+      }, {
+        "item" : "1620660",
+        "count" : "1"
+      }, {
+        "item" : "1639930",
+        "count" : "1"
+      }, {
+        "item" : "1620231",
+        "count" : "1"
+      }, {
+        "item" : "1637715",
+        "count" : "1"
+      }, {
+        "item" : "1617429",
+        "count" : "1"
+      } ],
+      "smallest" : "143650",
+      "count" : "37878",
+      "cardinality" : "37878"
+    },
+    "format" : {
+      "noCommas" : "true"
+    }
+  }, {
+    "id" : 604564236,
+    "name" : "Line",
+    "dataTypeName" : "line",
+    "description" : "Represents vector geometry objects on a map",
+    "fieldName" : "line",
+    "position" : 17,
+    "renderTypeName" : "line",
+    "tableColumnId" : 96178148,
+    "format" : { }
+  } ],
+  "grants" : [ {
+    "inherited" : false,
+    "type" : "viewer",
+    "flags" : [ "public" ]
+  } ],
+  "license" : {
+    "name" : "Open Data Commons Public Domain Dedication and License",
+    "termsLink" : "http://opendatacommons.org/licenses/pddl/1.0/"
+  },
+  "metadata" : {
+    "custom_fields" : {
+      "Department Metrics" : {
+        "Publishing Department" : "Public Works"
+      },
+      "Internal Management" : {
+        "Inventory ID" : "DPW-0030"
+      },
+      "Detailed Descriptive" : {
+        "Geographic unit" : "Intersection or street segment"
+      },
+      "Publishing Details" : {
+        "Data change frequency" : "As needed",
+        "Program link" : "",
+        "Publishing frequency" : "As needed",
+        "Geographic unit" : "Intersection or street segment"
+      }
+    },
+    "rowLabel" : "Sweeping block schedule",
+    "availableDisplayTypes" : [ "table", "fatrow", "page" ]
+  },
+  "owner" : {
+    "id" : "hf8p-vup5",
+    "disabledAt" : 1711666453,
+    "displayName" : "San Francisco Public Works",
+    "profileImageUrlLarge" : "/api/users/hf8p-vup5/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/hf8p-vup5/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/hf8p-vup5/profile_images/TINY",
+    "screenName" : "San Francisco Public Works",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula" ]
+  },
+  "query" : { },
+  "rights" : [ "read" ],
+  "tableAuthor" : {
+    "id" : "hf8p-vup5",
+    "disabledAt" : 1711666453,
+    "displayName" : "San Francisco Public Works",
+    "profileImageUrlLarge" : "/api/users/hf8p-vup5/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/hf8p-vup5/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/hf8p-vup5/profile_images/TINY",
+    "screenName" : "San Francisco Public Works",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula" ]
+  },
+  "tags" : [ "street sweeping", "streets", "sweeping", "cleaning", "mechanical", "schedule" ],
+  "flags" : [ "default", "federated", "internalToPublicFederatedView", "ownerMayBeContacted", "restorable", "restorePossibleForType" ]
+}

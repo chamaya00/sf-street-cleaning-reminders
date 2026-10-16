@@ -1,0 +1,28 @@
+HTTP/1.1 301 Moved Permanently
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Date: Fri, 16 Oct 2026 08:58:13 GMT
+Location: https://data.sf.gov/resource/yhqp-riqs.json?%24group=holidays%2Cfromhour%2Ctohour&%24order=n%20DESC&%24select=holidays%2Cfromhour%2Ctohour%2Ccount%28%2A%29%20AS%20n
+Access-Control-Allow-Origin: https://data.sfgov.org
+Access-Control-Allow-Methods: GET, POST
+
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 16 Oct 2026 08:58:13 GMT
+Content-Type: application/json;charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+ETag: W/"aG90ZWwuMTkzMDdfMzNfNzUxaWhEckZ1aWVYbUhJWllfLWpzT0ZxOFhUazlv---gzipLvJu2sD1Au1ISjvALIFQWHhDqJo--gzip--gzip"
+X-SODA2-Fields: ["holidays","fromhour","tohour","n"]
+X-SODA2-Types: ["number","number","number","number"]
+X-SODA2-Data-Out-Of-Date: false
+X-SODA2-Truth-Last-Modified: Thu, 14 May 2026 11:36:29 GMT
+X-SODA2-Secondary-Last-Modified: Thu, 14 May 2026 11:36:29 GMT
+Last-Modified: Thu, 14 May 2026 11:36:29 GMT
+Vary: Accept-Encoding
+X-Socrata-Region: aws-us-east-1-fedramp-prod
+X-Socrata-RequestId: 1079b33337189f55df91cae5b629aa12
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+

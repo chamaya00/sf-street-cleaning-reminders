@@ -1,0 +1,21 @@
+HTTP/1.1 301 Moved Permanently
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Date: Fri, 16 Oct 2026 08:58:11 GMT
+Location: https://data.sf.gov/api/views/yhqp-riqs.json
+Access-Control-Allow-Origin: https://data.sfgov.org
+Access-Control-Allow-Methods: GET, POST
+
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 16 Oct 2026 08:58:12 GMT
+Content-Type: application/json; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Vary: Accept-Encoding
+X-Socrata-Region: aws-us-east-1-fedramp-prod
+X-Socrata-RequestId: 5b2469ec627043f21a3e7130af575759
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+

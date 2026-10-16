@@ -1,0 +1,28 @@
+HTTP/1.1 301 Moved Permanently
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Date: Fri, 16 Oct 2026 08:58:13 GMT
+Location: https://data.sf.gov/resource/yhqp-riqs.json?%24where=cnn%3D%278753101%27
+Access-Control-Allow-Origin: https://data.sfgov.org
+Access-Control-Allow-Methods: GET, POST
+
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 16 Oct 2026 08:58:13 GMT
+Content-Type: application/json;charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+ETag: W/"aG90ZWwuMTkzMDdfMzNfNzUxQVA0YkpDM0x0WjNoYUlRQ1RwWVp5YnFnTnJR---gzipbA226O74hZQ7VAqJrmRXyi53sJg--gzip--gzip"
+X-SODA2-Fields: ["cnn","corridor","limits","cnnrightleft","blockside","fullname","weekday","fromhour","tohour","week1","week2","week3","week4","week5","holidays","blocksweepid","line"]
+X-SODA2-Types: ["text","text","text","text","text","text","text","number","number","number","number","number","number","number","number","number","line"]
+X-SODA2-Data-Out-Of-Date: false
+X-SODA2-Truth-Last-Modified: Thu, 14 May 2026 11:36:29 GMT
+X-SODA2-Secondary-Last-Modified: Thu, 14 May 2026 11:36:29 GMT
+Last-Modified: Thu, 14 May 2026 11:36:29 GMT
+Vary: Accept-Encoding
+X-Socrata-Region: aws-us-east-1-fedramp-prod
+X-Socrata-RequestId: 8cfe6c7bee9bb0ab5245460e7be6b176
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+

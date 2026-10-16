@@ -1,0 +1,32 @@
+HTTP/1.1 301 Moved Permanently
+Content-Type: text/html; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Date: Fri, 16 Oct 2026 08:58:14 GMT
+Location: https://data.sf.gov/api/views/yhqp-riqs/rows.csv?accessType=DOWNLOAD
+Access-Control-Allow-Origin: https://data.sfgov.org
+Access-Control-Allow-Methods: GET, POST
+
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 16 Oct 2026 08:58:16 GMT
+Content-Type: text/csv; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Deprecation: @1791331200
+Sunset: Tue, 22 Dec 2026 00:00:00 GMT
+Link: <https://support.socrata.com/hc/en-us/articles/43491231777047>; rel="deprecation"; type="text/html"
+Link: <https://support.socrata.com/hc/en-us/articles/43491231777047>; rel="sunset"; type="text/html"
+Content-disposition: attachment; filename=Street_Sweeping_Schedule.csv
+Cache-Control: public, must-revalidate, max-age=21600
+ETag: W/"aG90ZWwuMTkzMDdfMzNfNzUxVWZCbWU1STAyTTNoTEI1a25jR1Zid1hBRWFV---gzip5HIHdz1Bd93DqDksD5H4aozpgTk--gzip--gzip"
+X-SODA2-Data-Out-Of-Date: false
+X-SODA2-Truth-Last-Modified: Thu, 14 May 2026 11:36:29 GMT
+X-SODA2-Secondary-Last-Modified: Thu, 14 May 2026 11:36:29 GMT
+Last-Modified: Thu, 14 May 2026 11:36:29 GMT
+Vary: Accept-Encoding
+X-Socrata-Region: aws-us-east-1-fedramp-prod
+X-Socrata-RequestId: 39d124bbf89b677290d0560d2eea2359
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+
