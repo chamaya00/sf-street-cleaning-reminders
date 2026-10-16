@@ -133,7 +133,12 @@ States, by the name they carry everywhere: **Nothing soon**, **Sweep coming**, *
 - **Detail:** 13 pt, semibold, full opacity. The place, or the most important qualifier.
 - **Checked line:** 11 pt, regular, at 65% opacity, so vibrant mode shows it as quieter. It always begins "Checked" and gives the render time. This is ADR 0001's "shows when it last checked", and it is what tells the person the widget may be old.
 - **Space:** the plate takes the full width and gets 3 pt above and below it, which makes it the only element with room around it. The detail and checked lines sit tight together under it.
-- **What survives:** at the narrowest Lock Screen (iPhone SE class) the headline budget is 20 characters, the detail 26 and the checked line 22. Every string in section 8 is within those budgets. When a detail string would overflow, the place is dropped before the time. When a headline would overflow, it is a bug in this table.
+- **What survives:** these budgets were measured in the rendered mock at 172 pt, not estimated. The first draft's 26-character detail lines ("No reminders · check signs", "Schedule from Sep 30 (old)") clipped there, and were shortened.
+  - **Headline: 19 characters** ("Sweeping until 10am" exactly fills the plate). A plate-less state 1 headline in regular weight fits 23.
+  - **Detail: 22 characters** ("Earliest sweep Wed 8am", "Shrader St · east side").
+  - **Checked line: 22 characters.**
+
+  Every string in section 8 fits these budgets. A long `{corridor}` in a detail line is cut with an ellipsis, and " · {side} side" is kept: "Junipero Serr… · east side". When a headline would overflow, it is a bug in this table.
 
 **Status widget, the other two families** (specified for completeness; not in the mock).
 - `accessoryInline` is one line beside the date. It cannot draw a plate, so its first character carries the shape: "✓" in Nothing soon only, "?" in every can't-tell state and in Old schedule, and the headline's own first word otherwise.
@@ -157,7 +162,7 @@ The person parks on the east side of Shrader St on Wednesday 21 October at 6:40p
 | 2 | **Status known** | Every time the phone wakes, from the widget's next render | The **status widget**: no plate, state 1's headline for Friday, then "Shrader St · east side" / "Checked 6:41pm". On Thursday evening it becomes "Sweep Fri 8am" on a plate. | 0 |
 | 3 | **Evening-before heads-up** | Thu 7:00pm | A **heads-up** notification: "Street sweeping Fri 8–10am" / "Shrader St, east side (Waller–Beulah). Move your car before 8am. Alarm at 7:15am." The **daily run** fires at the same minute and creates the alarm. | 0 to read |
 | 4 | **Urgent alarm** | Fri 7:15am | The Clock **alarm** rings full screen, through Do Not Disturb and silent mode, labelled "Move car · sweep 8am · Shrader St". The widget reads "Move by 8am". | 1 (Stop) |
-| 5a | **Cleared by moving** | Fri 7:40am, car reconnects | Nothing new appears. Pending and delivered notifications are removed, every "Move car" alarm is turned off, and the widget reads "No spot saved" / "Since you drove off 7:40am" (state 11). | 0 |
+| 5a | **Cleared by moving** | Fri 7:40am, car reconnects | Nothing new appears. Pending and delivered notifications are removed, every "Move car" alarm is turned off, and the widget reads "No spot saved" / "Drove off 7:40am" (state 11). | 0 |
 | 5b | **Cleared by the window ending** | Fri 10:00am | The heads-up is removed at the next script run after 10:00am. The widget moves on to the next window: on this side that is the following Friday, so it shows state 1's headline for Oct 30 (state 13). | 0 |
 
 **Done criterion 1 on #1 ("without opening anything") is met at step 2**, by the status widget. That rests on two things this route cannot guarantee, so the design makes both visible instead:
@@ -229,9 +234,9 @@ A widget whose checked line says "Checked Tue 9:02pm" on a Thursday is a widget 
 - **When:** the side rule (research §5.3) does not resolve, or the fix has no accuracy, and one block is the only candidate.
 - **Widget:** [plate][?] headline "Which side?", detail "Earliest sweep {Wkd} {start}" (for example "Earliest sweep Wed 8am"), checked line as usual.
 - **Capture notice:** title "Which side of {corridor}?".
-  - Body "GPS couldn't tell. Until you pick, reminders follow the earlier sweep: {side A} side {Wkd} {from}–{to}. {Side B} side: {Wkd} {from}–{to}. Hold to pick."
+  - Body "GPS couldn't tell. Until you pick, reminders follow the earlier sweep: {side A} side {Wkd} {from}–{to}. {Side B} side: {Wkd} {from}–{to}. Alarm at {alarm time}. Hold to pick." The alarm sentence appears only when capture created an alarm (T5, T6).
   - It carries the two **side buttons** (section 10).
-  - *Example:* "Which side of Shrader St?" / "GPS couldn't tell. Until you pick, reminders follow the earlier sweep: west side Wed 8–10am. East side: Fri 8–10am. Hold to pick."
+  - *Example* (parked Tue 7:31pm): "Which side of Shrader St?" / "GPS couldn't tell. Until you pick, reminders follow the earlier sweep: west side Wed 8–10am. East side: Fri 8–10am. Alarm at 7:15am. Hold to pick."
 - **Heads-up:** title "Street sweeping {Wkd} {start} — which side?". Body "{corridor} ({from}–{to}): {side A} side {Wkd} {from}–{to}, {side B} side {Wkd} {from}–{to}. Reminding for {side A} until you pick. Alarm at {alarm time}." It carries the side buttons too.
 - **Alarm label:** "Move car · sweep {start} · {corridor} (side?)". *Example:* "Move car · sweep 8am · Shrader St (side?)". It names no side, because moving the car is right whichever side it is on.
 - **Names the candidates:** both sides, with both windows, in every notification. **Reminds on the earliest:** yes.
@@ -250,7 +255,7 @@ A widget whose checked line says "Checked Tue 9:02pm" on a Thursday is a widget 
 ### State 7. Spot unknown (can't tell where you parked)
 
 - **When:** the no-fix rule applies (*h* < 0, *h* > 50 m, or no location from Shortcuts).
-- **Widget:** [plate][?] headline "Spot unknown", detail "No reminders · check signs", checked line as usual.
+- **Widget:** [plate][?] headline "Spot unknown", detail "No reminders set", checked line as usual.
 - **Capture notice:** title "Couldn't tell where you parked". Body "The phone gave no usable location, so no sweeping reminders are set. Tap here while you're by the car to try again, or check the signs."
   - Tapping it opens Scriptable, which takes its own fix (`Location.current()`, which carries accuracy) and runs capture again. #7 verifies this.
 - **Heads-up:** — (no window is known).
@@ -260,7 +265,7 @@ A widget whose checked line says "Checked Tue 9:02pm" on a Thursday is a widget 
 ### State 8. No schedule here (no record for this location)
 
 - **When:** the fix resolves, but the city's table has no row for the resolved block side. `windowsForSide` returns `unknown` with "no sweeping rows". The same applies when no centreline lies within the candidate radius. Of the city's 12,253 blocks, 1,933 are swept on one side only, so choosing the unswept side lands here too.
-- **Widget:** [plate] headline "No schedule here", detail "No reminders · check signs", checked line as usual.
+- **Widget:** [plate] headline "No schedule here", detail "No reminders set", checked line as usual.
 - **Capture notice:** title "No sweeping schedule for this spot".
   - Body "The city's list has nothing for {corridor}, {side} side ({from}–{to}). That doesn't mean it's never swept. Check the signs. No reminders set."
   - When there is no block nearby: "The city's list has no street within 60 m of where you parked. Check the signs. No reminders set."
@@ -273,9 +278,9 @@ This is a qualifier, given its own section because the issue lists it as a state
 
 - **When:** `stale` is true, because `fetchedAt` is more than 14 days before now or missing.
 - **Widget:**
-  - **Where it would otherwise be Nothing soon (state 1 or 2):** [plate][?] headline "Old schedule", detail "From {Mon d} · next {Wkd} {start}" (for example "From Sep 30 · next Fri 8am"), checked line as usual. Nothing on the widget reassures.
-  - **In every other state**, the headline stands and the detail becomes "Schedule from {Mon d} (old)". It names the date.
-  - **When nothing was ever downloaded:** [plate][?] "No schedule yet" / "Open Scriptable once online".
+  - **Where it would otherwise be Nothing soon (state 1 or 2):** [plate][?] headline "Old schedule", detail "From {Mon d} · {Wkd} {start}" (for example "From Sep 30 · Fri 8am"), checked line as usual. Nothing on the widget reassures.
+  - **In every other state**, the headline stands and the detail becomes "Old data: {Mon d}". It names the date.
+  - **When nothing was ever downloaded:** [plate][?] "No schedule yet" / "Open Scriptable online".
 - **Notifications (capture notice and heads-up):** the body gains a final sentence, "Schedule last downloaded {Mon d}, so it may be out of date."
   - Where state 1 would have applied, the capture notice body is replaced by "Next sweep {Wkd Mon d}, {from}–{to}, by a schedule last downloaded {Mon d} that may be out of date. Check the signs."
   - *Example:* "Parked · Shrader St, east side" / "Next sweep Fri Oct 23, 8–10am, by a schedule last downloaded Sep 30 that may be out of date. Check the signs."
@@ -294,7 +299,7 @@ A qualifier.
 ### State 11. No spot saved (parking not captured)
 
 - **When:** the spot was cleared by a car-connect and no capture has run since.
-- **Widget:** [plate] headline "No spot saved", detail "Since you drove off {time}" (with the weekday when it was not today's date, for example "Since Tue 5:42pm"), checked line as usual.
+- **Widget:** [plate] headline "No spot saved", detail "Drove off {time}" (with the weekday when it was not today's date, for example "Drove off Tue 5:42pm"), checked line as usual.
 - **Capture notice:** — (by definition nothing ran).
 - **Not-captured notice** (delivered by the daily run at 7:00pm when no spot exists and the last clear was more than an hour ago): title "No parked spot saved". Body "Nothing was saved since you drove off at {time}. If your car is on the street, no reminders are set for it."
 - **Heads-up:** — and **alarm label:** —.
@@ -306,7 +311,7 @@ A qualifier.
   - pending notifications for the spot are removed (`removePending`), and delivered ones too (`removeDelivered`);
   - every Clock alarm whose label begins "Move car" is turned off;
   - the spot is deleted.
-- **Widget:** state 11's words, "No spot saved" / "Since you drove off {time}". This is deliberate. While driving, those words are true. If the next park is never captured, they are still true, and they become the warning. The phone cannot tell "moved" from "not captured", so the widget does not pretend to.
+- **Widget:** state 11's words, "No spot saved" / "Drove off {time}". This is deliberate. While driving, those words are true. If the next park is never captured, they are still true, and they become the warning. The phone cannot tell "moved" from "not captured", so the widget does not pretend to.
 - **Notifications:** none. The person is driving.
 - **Alarm label:** — (turned off).
 
@@ -488,9 +493,27 @@ The sheet's accent appears five times: four happy-path numerals and one "recomme
 
 ## 14. Critique of the rendered mock
 
-Written after opening the four pictures. See the pull request for the before and after.
+Written after opening the rendered pictures, three rounds of them, and changed accordingly.
 
-*(Filled in below, after rendering.)*
+**What I found, and what changed.**
+1. **Narrow, first render: the page was clipped on the right**, and the headline lost "matters.". Headless Chrome lays the narrow window out wider than 375 px and photographs only the left 375. *Changed:* the narrow layout pins the sheet to 375 px, and all four hero lock screens now fit in the narrow picture, two by two.
+2. **Wide, first and second renders: the fourth hero panel ("Which side?") wrapped onto a second row** and fell out of the picture. The captions were wider than the phones. *Changed:* the captions are capped and the phones scaled to 0.70. All four surfaces criterion 4 names now sit in one row of the wide picture.
+3. **Full sheet: three widget detail lines clipped at the real widget width:** "No reminders · check signs", "Schedule from Sep 30 (old)" and "From Sep 30 · next Fri 8am". The 26-character budget I had written down was wrong. *Changed:* the measured budgets are now in section 6 (19 / 22 / 22), and the strings were shortened ("No reminders set", "Old data: Sep 30", "Drove off 7:40am"). This is the finding that matters most for #7. Text on this surface has to be checked against the drawn width, not a guess.
+4. **Directions panel: B's widgets overflowed their slabs** and cut "Spot unknown" mid-word, which made the recommended direction look broken for a reason that had nothing to do with it. *Changed:* the slab padding and scale.
+5. **Side-choice panel d had an "annotation" drawn as a notification.** In the picture it reads as a real notification the product sends, which it does not. *Removed*, and the sentence moved into the caption.
+
+**Against the craft checks.**
+- *Where the eye lands first.* In the wide picture it lands first on the masthead, then on the lock-screen clock digits. The widget, which is the subject, is small. That is the truth of the device: an accessory widget is a small thing under a very large clock, and inflating it in the hero would misrepresent what the person will see. The glance-test section enlarges the widgets 1.3× and is where they lead. I kept it that way, knowingly.
+- *Cover the accent.* The sheet's orange appears on four step numerals and one tag. Covering it loses nothing on the phone surfaces, which never use it. It is decoration of the drawing, not structure.
+- *Blur.* The blurred row in the mock is the check: the plates of Which side?, Old schedule and Sweep coming survive as bright bars, and the Nothing soon slab reads as empty. That is the composition working in the one way it has to.
+- *Narrow before wide.* After fix 1 the narrow picture holds all four surfaces. The captions of the bottom two are cut by the picture's edge, but the surfaces are whole. Left as is: the full narrow capture shows them.
+- *The element I would remove.* The capture notice in hero panel 1. It makes panel 1 busier than the bare widget would be, and the issue does not list it. It stayed because it is how a capture that silently failed becomes visible (its absence), and how step 1 has any feedback before iOS re-renders the widget.
+
+**What the drawing cannot settle.**
+- How vibrant mode really renders the plate (solid, with the headline cut out) can only be seen on the phone.
+- So can whether iOS 26 shows the app name on a collapsed notification. The drawing shows "SCRIPTABLE" only on expanded notifications and relies on the icon otherwise.
+
+Both are on #7's list in section 16.
 
 ---
 
