@@ -1,15 +1,20 @@
 # Research #3: how the iPhone learns where I parked, and how a reminder reaches the lock screen
 
-Issue: [#3](https://github.com/chamaya00/sf-street-cleaning-reminders/issues/3) · Parent: [#1](https://github.com/chamaya00/sf-street-cleaning-reminders/issues/1) · Decision log: [#2](https://github.com/chamaya00/sf-street-cleaning-reminders/issues/2) · ADR: [`docs/decisions/0001-native-ios-app-with-shortcuts-capture.md`](../decisions/0001-native-ios-app-with-shortcuts-capture.md) (proposed)
+Issue: [#3](https://github.com/chamaya00/sf-street-cleaning-reminders/issues/3) · Parent: [#1](https://github.com/chamaya00/sf-street-cleaning-reminders/issues/1) · Decision log: [#2](https://github.com/chamaya00/sf-street-cleaning-reminders/issues/2) · ADR: [`docs/decisions/0001-scriptable-with-shortcuts-capture.md`](../decisions/0001-scriptable-with-shortcuts-capture.md) (accepted)
 
 **Decision this serves:** which route to build for capturing where the car is parked and getting a reminder onto one iPhone's lock screen (and so which stack), within O4's budget of the $99/yr Apple Developer account plus small hosting.
 
-**State of this document (2026-10-14).** The comparison is stable: the last four sources I read (TestFlight incident threads, the CURB repository, the Scriptable type definitions, the AlarmKit sample) changed what the routes cost, not how they rank. **One item is pending:** criterion 2's check needs real records from DataSF, and this environment cannot reach the city's data host. Section 4.7 says exactly what to run. Nothing in this document is a reconstructed or invented record.
+**State of this document (revision round 1, 2026-10-16).** Two things changed after the first version (2026-10-14), and this revision addresses only those:
 
-**Two findings the driver should see before anything else:**
+1. **Criterion 2's check is met.** The requests in section 4.7 ran on a GitHub runner on 2026-10-16T08:58:18Z ([run 38877227921](https://github.com/chamaya00/sf-street-cleaning-reminders/actions/runs/38877227921)). Section 4.7 quotes the raw responses from branch [`data/sf-street-sweeping`](https://github.com/chamaya00/sf-street-cleaning-reminders/tree/data/sf-street-sweeping). Sections 4.2–4.6 and 5.2 now mark as verified what that data settles. Nothing in this document is a reconstructed or invented record.
+2. **The stack is now route 3.5, Scriptable** (D4 and D5 on [#2](https://github.com/chamaya00/sf-street-cleaning-reminders/issues/2)). The person has no Mac (O9), which is the first flip condition section 9 named. ADR 0001 is rewritten to that route as `Status: proposed`. Section 9.4 adds a Scriptable addendum that checks what the ADR relies on. Section 9.2 puts the strongest argument against Scriptable beside the old argument against the native route (9.1). Sections 2, 3, 9.1 and 9.3 still read as they did on 2026-10-14: they are the comparison the decision was made from. Section 6 carries a note where it no longer applies.
 
-1. **The city's open-data portal has moved hosts.** O6 pre-approves `data.sfgov.org`. An open-source SF sweeping app reported on 2026-09-09 that `data.sfgov.org` now answers with a redirect to `data.sf.gov`. Its maintainer confirmed this and switched hosts on 2026-09-27 ([alevizio/curb#26](https://github.com/alevizio/curb/issues/26)) [S]. A native HTTP client follows that redirect, so at runtime the app would talk to `data.sf.gov`, a host O6 does not name. **That needs the person's word** (section 4.6).
-2. **The recommended route needs a Mac with Xcode at least once.** Xcode Cloud's first workflow has to be configured in Xcode ([Apple](https://developer.apple.com/documentation/xcode/configuring-your-first-xcode-cloud-workflow)) [V]. The issue and the objective never said whether the person has a Mac. If they do not, the answer may flip (section 9).
+The comparison itself is stable. The addendum's sources changed what the Scriptable route costs, not how the routes rank once there is no Mac.
+
+**Two findings from the first version, and where they stand:**
+
+1. **The city's open-data portal has moved hosts.** This is now **verified**: every request to `data.sfgov.org` was answered `301 Moved Permanently` with a `Location:` on `data.sf.gov` (section 4.6). It was first reported by an open-source SF sweeping app ([alevizio/curb#26](https://github.com/alevizio/curb/issues/26)) [S]. O12 and D5 settle it for the phone: the phone never calls either city host, and the weekly Action on GitHub's runner does.
+2. **The native route needed a Mac with Xcode at least once** ([Apple](https://developer.apple.com/documentation/xcode/configuring-your-first-xcode-cloud-workflow)) [V]. The person answered: **no Mac** (O9). The answer flipped to 3.5 (sections 9 and 9.4).
 
 ## Legend
 
@@ -21,7 +26,9 @@ Every factual claim carries one of these tags:
 - **[I]** Inference. I reasoned to it, and the sentence says from what.
 - **[A]** Assumption. Neither of the above, but the comparison rests on it. All of these are listed in section 8.
 
-Hosts this environment could not reach: `data.sfgov.org`, `data.sf.gov`, `support.apple.com`, `webkit.org`, `sfmta.com`, `gps.gov`, `docs.scriptable.app`, `apps.apple.com`, `docs.github.com`, `en.wikipedia.org`, `curb.guide`, `spotangels.com`, `catalog.data.gov`, `hub.arcgis.com`. `developer.apple.com` (through its JSON documentation endpoints), `github.com` and `raw.githubusercontent.com` were reachable.
+Hosts this environment could not reach: `data.sfgov.org`, `data.sf.gov`, `support.apple.com`, `webkit.org`, `sfmta.com`, `gps.gov`, `docs.scriptable.app`, `apps.apple.com`, `docs.github.com`, `en.wikipedia.org`, `curb.guide`, `spotangels.com`, `catalog.data.gov`, `hub.arcgis.com`. In revision round 1 these were also unreachable: `matthewcassinelli.com`, `talk.automators.fm`, `www.similarweb.com`, `apps.appfollow.io`, `www.iphone-ticker.de`. `developer.apple.com` (through its JSON documentation endpoints), `github.com` and `raw.githubusercontent.com` were reachable.
+
+**The city data is the exception.** Section 4.7's requests were run against `data.sfgov.org` on a GitHub runner, not from here, and their raw responses are committed on branch `data/sf-street-sweeping`. Claims tagged [V] in sections 4 and 5.2 are read from those files.
 
 ---
 
@@ -233,104 +240,289 @@ Projects already doing this:
 
 ### 4.1 Identity
 
-- **Dataset id `yhqp-riqs`**, "Street Sweeping Schedule", managed by San Francisco Public Works. About 37.9K rows and 17 columns; "Each row is a: Sweeping block schedule" ([DataSF page via search excerpt](https://data.sf.gov/City-Infrastructure/Street-Sweeping-Schedule/yhqp-riqs/about_data)) [V-x]. The id is confirmed independently by [sweepwatch-data](https://github.com/mithr4ndir/sweepwatch-data) and [curb#26](https://github.com/alevizio/curb/issues/26) [S].
+- **Dataset id `yhqp-riqs`**, "Street Sweeping Schedule", attributed to "San Francisco Public Works". It has 37,878 rows and 17 columns, and its row label is "Sweeping block schedule". All of this is from the metadata, request 1 in 4.7 [V]. The id is confirmed independently by [sweepwatch-data](https://github.com/mithr4ndir/sweepwatch-data) and [curb#26](https://github.com/alevizio/curb/issues/26) [S].
 - URLs:
   - `https://data.sfgov.org/d/yhqp-riqs` (O6's host)
   - `https://data.sf.gov/City-Infrastructure/Street-Sweeping-Schedule/yhqp-riqs` (the portal's current host, 4.6)
   - API base `https://data.sf.gov/resource/yhqp-riqs.json`
   - Full CSV `https://data.sfgov.org/api/views/yhqp-riqs/rows.csv?accessType=DOWNLOAD` [V-x, URL seen in the search index]
-- Bike-lane sweeping is not included [V-x]. An archive of the previous version exists as `xsry-uuyt`, "Archived Street Sweeping data (as of Jan 27, 2025)" ([DataSF](https://data.sf.gov/City-Infrastructure/Archived-Street-Sweeping-data-as-of-Jan-27-2025-/xsry-uuyt/data)) [V-x]. The current dataset's first-published date is 2025-01-27 [S, catalog excerpt]. So the city replaced the whole dataset once, less than two years ago [I].
+- "Please note that bike lane sweeping is not included in this dataset." (request 1) [V]. An archive of the previous version exists as `xsry-uuyt`, "Archived Street Sweeping data (as of Jan 27, 2025)" ([DataSF](https://data.sf.gov/City-Infrastructure/Archived-Street-Sweeping-data-as-of-Jan-27-2025-/xsry-uuyt/data)) [V-x]. The current dataset's `publicationDate` is `1738000541` (request 1) [V], which is 2025-01-27 [I: Unix-time conversion]. So the city replaced the whole dataset once, less than two years ago [I].
 
 ### 4.2 Fields
 
-Descriptions below are the portal's own column descriptions where the search index showed them [V-x]. Otherwise they come from mirrors [S] or are inferred [I]. Section 4.7 is what turns each row into [V].
+Every column name, API field name, type and description below is verbatim from the `columns` array of the metadata (request 1 in 4.7) [V]. The value counts are from that response's `cachedContents` [V]. The "Sample value" column is from the first record of request 2 [V].
 
-| Carries | Field | What is known |
-|---|---|---|
-| Block | `cnn` | "Centerline Network Number", a unique id per street segment [V-x] |
-| Block | `corridor`, `limits` | Street name, and from/to cross streets [V-x] |
-| Block side | `cnnrightleft` | "Side of Street Swept (L=Left, R=Right)" [V-x]. **Left/right relative to what** is not stated. I infer it is relative to the segment's digitised direction [I]. Pending check 5 |
-| Block side | `blockside` | "Cardinal Side of Street (North, South, etc.)" [V-x] |
-| Weekday | `weekday`, `fullname` | Day of service. Mirrors show `fullname` values like "Tuesday" or "Tue 1st & 3rd" [S] |
-| Hours | `fromhour`, `tohour` | "Start hour of service in 24 hour format" / end hour [V-x]. Whole hours only [I] |
-| Week of month | `week1` … `week5` | "Whether a block is serviced in that week of the month", 1 or 0 [V-x on the archived dataset's description; S on values] |
-| Holiday behaviour | `holidays` | 0/1 in mirrors [S]. **Meaning not stated anywhere I could reach.** I infer that 1 = swept on holidays too [I]. Pending check 4 |
-| Id | `blocksweepid` | Numeric id [S] |
-| Geometry | a line column (name unconfirmed). An ArcGIS mirror shows `Shape__Length` [S] | Pending checks 1 and 5 |
+| Carries | Column (`fieldName`), type | The city's description | Sample value | Notes |
+|---|---|---|---|---|
+| Block | `CNN` (`cnn`), text | "Centerline network number – unique identifier for every street segment in CCSF basemap" | `"8753101"` | Text, so request 5 filters with `cnn='…'` in quotes |
+| Block | `Corridor` (`corridor`), text | "Street Name" | `"Market St"` | |
+| Block | `Limits` (`limits`), text | "From / To Streets" | `"Larkin St  -  Polk St"` | Two spaces either side of the hyphen |
+| Block side | `CNNRightLeft` (`cnnrightleft`), text | "Side of Street Swept (L=Left, R=Right)" | `"L"` | R 19,183 rows, L 18,695. Left/right relative to what is not stated. It matches the line's digitised direction on all five blocks checked (5.2) |
+| Block side | `BlockSide` (`blockside`), text | "Cardinal Side of Street (North, South, etc.)" | `"SouthEast"` | Values: North, South, West, East, NorthWest, SouthEast, SouthWest, NorthEast. **Null on 839 rows** |
+| Weekday | `WeekDay` (`weekday`), text | "Abbreviated day of week serviced" | `"Tues"` | Values: Mon, Tues, Wed, Thu, Fri, Sat, Sun, and **Holiday** (824 rows; see 4.4). Note "Tues" for Tuesday, with the others three letters |
+| Weekday and weeks, as a label | `FullName` (`fullname`), text | "Full Name of day of the Week or abbreviated day of week + week of the month serviced" | `"Tuesday"` | For example "Tue 1st, 3rd, 5th", "Mon 2nd & 4th", "HOLIDAY" |
+| Hours | `FromHour` (`fromhour`), number | "Start hour of service in 24 hour format" | `"5"` | Whole hours, 0 to 13 |
+| Hours | `ToHour` (`tohour`), number | "End hour of service in 24 hour format" | `"6"` | Whole hours, 2 to 15. Request 4 covers every row, and in every group `tohour` is later than `fromhour`, so no window crosses midnight |
+| Week of month | `Week1` … `Week5` (`week1` … `week5`), number | "1= serviced on the first week of the month" … "1= serviced on the fifth week of the month" | `"1"` ×5 | See 4.3 |
+| Holiday behaviour | `Holidays` (`holidays`), number | "1= swept on holidays" | `"0"` | 0 on 35,145 rows, 1 on 2,733 rows. See 4.4 |
+| Id | `BlockSweepID` (`blocksweepid`), number | "Unique ID for this dataset" | `"1640782"` | |
+| Geometry | `Line` (`line`), line | "Represents vector geometry objects on a map" | GeoJSON `LineString` (shown in 4.7) | Coordinates are `[longitude, latitude]` |
+
+The SODA2 JSON returns every value as a string, even in columns the headers type as `number` (`X-SODA2-Types` in request 2's headers, against `"fromhour":"5"` in its body) [V]. #4's parser has to convert them.
 
 ### 4.3 Week of month, and what a 5th week means
 
-- **Representation:** a 5th week is the `week5` flag [V-x for the column's existence].
-- **Inferred semantics [I], to pin in #4's fixed-date tests once 4.7 confirms them:** `weekN` = 1 means the block is swept on the *N*th occurrence of `weekday` in that calendar month. Days 1–7 are week 1, 8–14 week 2, 15–21 week 3, 22–28 week 4, and 29–31 week 5.
-  - A "1st & 3rd Tue" block is `1,0,1,0,0`, so it is *not* swept on a fifth Tuesday.
-  - A weekly block is `1,1,1,1,1`.
-- **Searched and not found:** any city statement of that rule (section 7). A block with `week5 = 1` but not every other week would contradict this inference. Check 3 in 4.7 lists every week pattern that occurs, which settles it.
+- **Representation [V].** Every row carries five explicit flags, `week1` to `week5`, each "1= serviced on the *N*th week of the month" (request 1). Exactly six patterns occur, and their counts sum to all 37,878 rows (request 3):
+
+  | `week1`–`week5` | Rows | A `fullname` label that goes with it |
+  |---|---|---|
+  | 1,1,1,1,1 | 23,908 | "Tuesday": every week (request 2, record 1) |
+  | 0,1,0,1,0 | 6,880 | "Mon 2nd & 4th" (a value in request 1; paired with this pattern by name) |
+  | 1,0,1,0,0 | 4,367 | "Wed 1st & 3rd" (request 2, record 3) |
+  | 1,0,1,0,1 | 2,287 | "Tue 1st, 3rd, 5th" (request 2, record 2) |
+  | 0,1,0,1,1 | 334 | "Fri 2nd, 4th, 5th" (a grep of the full table, request 6) |
+  | 1,0,0,0,0 | 102 | "Fri 1st" (request 1's smallest `fullname`; paired by name) |
+
+- **A 5th week is explicit, row by row [V].** A "1st & 3rd" block is either `1,0,1,0,0` (not swept on a fifth occurrence) or `1,0,1,0,1` (swept), and `fullname` says which ("Wed 1st & 3rd" against "Tue 1st, 3rd, 5th" in request 2). The same split exists for "2nd & 4th". **#4 must read `week5`, and never infer it from the other weeks or from the label.** No row has `week5 = 1` with weeks 1–4 all 0.
+- **What "week *N*" counts [I, now well supported].** It means the *N*th occurrence of that weekday in the calendar month: days 1–7 are week 1, 8–14 week 2, 15–21 week 3, 22–28 week 4, and 29–31 week 5.
+  - The city's description says only "serviced on the fifth week of the month" [V]. But labels such as "Tue 1st, 3rd, 5th" name occurrences of a weekday, and a fifth occurrence can only fall on days 29–31.
+  - The one competing reading counts calendar rows (weeks starting on a Sunday). It differs only in months that do not start on Sunday. #4's fixed-date tests should pin the occurrence reading, and #7's device check should compare one 5th-week date against a posted sign.
+- **Searched and not found:** any city statement of the rule (section 7).
 
 ### 4.4 Holidays: where the list comes from, and who maintains it
 
-- **Source.** The holiday list is **not in the dataset**. It is SFMTA's "Holiday Street Parking Enforcement Schedule" ([sfmta.com](https://www.sfmta.com/getting-around/drive-park/holiday-enforcement-schedule)) [V-x]. From its 2026 table as quoted by the search index:
+**What the dataset says, in two separate places [V].**
+
+1. **The `holidays` flag** on every row: "1= swept on holidays" (request 1). It is `"0"` on 35,145 rows and `"1"` on 2,733.
+   - In request 4, which groups every row by flag and hours, the eight largest groups all have `holidays` `"0"`.
+   - Every `"1"` group is an early-morning window, starting by 06:00 and ending by 08:00. The largest is `{"holidays":"1","fromhour":"2","tohour":"6","n":"1405"}`.
+2. **A separate holiday schedule:** 824 rows whose `weekday` is `"Holiday"` and `fullname` is `"HOLIDAY"` (request 1's value counts). Request 5 shows how the two fit together on one block, Market St between Larkin and Polk (CNN 8753101):
+   - **L / SouthEast side:** Monday–Friday 05:00–06:00 with `holidays` `"0"`; Saturday, Sunday and **HOLIDAY** 05:00–07:00 with `holidays` `"1"`.
+   - **R / NorthWest side:** Monday–Friday 02:00–06:00 with `holidays` `"0"`, and no Holiday row.
+
+**How to read them [I, from request 5's block].**
+- A regular-weekday row with `holidays` 0 does not run when its day is a holiday.
+- A row with `holidays` 1 still runs.
+- A `Holiday` row is a window that runs on a holiday, whatever weekday the holiday falls on.
+
+**The two fields disagree on some rows [V].** In the full table (request 6, counted by grep, not reproduced), 537 of the 824 `Holiday` rows have `holidays` 1, and **287 have `holidays` 0**. A row that exists only to say "this runs on holidays" while flagged "not swept on holidays" cannot be read both ways. #4 should treat a `Holiday` row as applying on every listed holiday, whatever its flag [I, from done criterion 4].
+
+**What this means for the holiday table [I].** The dataset says *which windows* run on holidays. It does not say *which dates are holidays*. So the table this repository maintains becomes a dated list of holiday dates per year. SFMTA's split between daytime and nightly sweeping stays as a second source, because it disagrees with the dataset in both directions:
+- **The dataset suspends where SFMTA enforces.** Market St's R side runs Monday 02:00–06:00 with `holidays` 0, so the dataset says it is not swept on a Monday holiday. SFMTA enforces nightly sweeping (12am–6am) on MLK Day, Memorial Day and Labor Day, all Mondays (below).
+- **The dataset sweeps where SFMTA does not enforce.** 113 rows run 06:00–08:00 with `holidays` 1 (request 4), which is inside SFMTA's daytime band, and SFMTA does not enforce daytime sweeping on any listed holiday.
+
+So the rule #4 should implement, on a date in the holiday table: a window is suspended only when its row is a regular-weekday row with `holidays` 0 **and** SFMTA's table says that window's band (daytime or nightly) is not enforced that day. Every other case reminds as normal. A false alarm is cheap.
+
+- **Where the dates come from.** The holiday list is **not in the dataset**. It is SFMTA's "Holiday Street Parking Enforcement Schedule" ([sfmta.com](https://www.sfmta.com/getting-around/drive-park/holiday-enforcement-schedule)) [V-x]. From its 2026 table as quoted by the search index:
   - **Weekday Daytime Street Sweeping (Street Cleaning 6am–2pm)** is not enforced on every listed holiday.
   - **Nightly street sweeping (12am–6am)** *is* enforced on most of them: MLK Day 1/19/2026, Memorial Day, Juneteenth, Independence Day, Labor Day, Veterans Day 11/11/2026, and the day after Thanksgiving.
   - Nightly sweeping is not enforced only on New Year's Day, Thanksgiving (11/26/2026) and Christmas (12/25/2026) [V-x].
   - A third-party site's list disagrees on Veterans Day ([SpotAngels map page, via excerpt](https://www.spotangels.com/sf-street-cleaning-map)) [S]. SFMTA wins.
-- **Consequence.** Holiday handling depends on the window's *hours* (daytime or nightly) as well as the date. Possibly it also depends on the `holidays` flag [I]. #4's criteria need both.
+- **Consequence.** Holiday handling depends on the date, on the window's band (daytime or nightly), and on the row's `holidays` flag and `weekday`. The rule above combines all three, and #4's criteria need each one.
 - **Who maintains it.** This repository, by hand. A dated table (one year per entry, with the SFMTA URL and retrieval date) is updated once a year when SFMTA publishes the next year. That is a person's step or a driver's issue.
 - **Fail-safe rule for #4 [I, from done criterion 4].** For a date whose year is not in the table, treat the day as a normal sweeping day and say "holiday list missing for <year>". Never assume a suspension. A false alarm is cheap.
 
 ### 4.5 How often the city changes the data, and snapshot vs refresh
 
-- The portal says it is "updated on an 'as needed' basis, when sweeping schedules change" [V-x].
-- Catalog listings show last-modified dates between April and August 2026 [S]. A county ArcGIS mirror is labelled "pulled weekly" [S].
-- The whole dataset was replaced on 2025-01-27 (4.1) [V-x].
-- Public Works notes that actual service varies with staffing and equipment [S].
-- **Recommendation: both, at two intervals.**
-  1. **Snapshot** at build time, committed as a test fixture and bundled in the app. The app works offline, and every CI test runs against real rows.
-  2. **Refresh at each parking capture**: fetch the current rows for the candidate CNNs only, a few rows per request [I], and use them if the fetch succeeds.
-  3. **Staleness rule [I]:** if the live fetch fails *and* the bundled snapshot is older than **30 days**, every status and reminder says "schedule may be out of date (data from <date>)". It never shows a plain "safe".
-- 30 days is a judgement, not a measurement: monthly is about the cadence the catalog dates suggest [I]. #4 can tighten it.
+- **How often the city says it changes [V].** "This dataset will be updated on an 'as needed' basis, when sweeping schedules change." The metadata's publishing details read `"Data change frequency" : "As needed"` and `"Publishing frequency" : "As needed"` (request 1).
+- **When it last changed [V].** `"rowsUpdatedAt" : 1778758589` (request 1). Every data response reports the same moment as `Last-Modified: Thu, 14 May 2026 11:36:29 GMT` (request 2's to 5's headers). At the time of the fetch, the rows had not changed for five months [I: arithmetic].
+- The current dataset was published on 2025-01-27, replacing the archived one (4.1) [V for the date; I for the replacement]. Public Works adds: "Actual service may vary depending on staffing, equipment availability, and operational needs." (request 1) [V].
+- **Recommendation (changed with the route, O12 and D5): refresh weekly, done by the repository.**
+  1. A scheduled GitHub Action fetches the table from DataSF once a week. It builds a compact JSON stamped with its own fetch time (`fetchedAt`) and the city's `rowsUpdatedAt`, and publishes it on GitHub Pages.
+  2. The phone downloads that file at each capture and from its daily automation, and keeps the last good copy. Nothing on the phone calls DataSF.
+  3. A snapshot of the table is also committed as #4's test fixture, so every CI test runs against real rows.
+- **Staleness rule [I].** Staleness is measured from `fetchedAt`, not from `rowsUpdatedAt`, because the rows can rightly stay unchanged for months. If the phone's copy was fetched more than **14 days** ago, which is two missed weekly runs, every status and reminder says "schedule may be out of date (checked <date>)". It never shows a plain "safe". This replaces the first version's 30-day rule for a bundled snapshot, which was set against a guessed monthly cadence. #4 can tighten it.
+- **Two facts the weekly Action has to design around.**
+  - **The CSV export is being retired [V].** The full-table CSV export used by request 6 (`/api/views/yhqp-riqs/rows.csv`) answered with `Deprecation: @1791331200` and `Sunset: Tue, 22 Dec 2026 00:00:00 GMT` ([`6-full-table.headers`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/6-full-table.headers)). Socrata's notice says the legacy SODA1 `/api/views/{4x4}/rows` endpoints are deprecated from October 2026, with SODA2 and SODA3 the replacements for reads ([Socrata, weekly updates 2026-07-16](https://support.socrata.com/hc/en-us/articles/41869841509783-Weekly-updates-July-16-2026)) [V-x]. The Action should read the SODA2 `/resource/yhqp-riqs.json` endpoint that requests 2–5 used, paging with `$limit` and `$offset` [I].
+  - **Scheduled workflows can pause [V-x].** GitHub disables scheduled workflows in a public repository after 60 days without repository activity ([GitHub docs, disabling and enabling a workflow](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows)). An Action that commits only when the rows change could stop without warning in a quiet stretch [I]. The staleness rule is what makes that visible on the phone.
 
 ### 4.6 The host has moved: `data.sfgov.org` → `data.sf.gov`
 
-- [curb#26](https://github.com/alevizio/curb/issues/26), 2026-09-09 [S]: "the server returns an HTTP 301/302 redirect to `https://data.sf.gov/resource/...`" and browsers then fail on CORS. The maintainer's reply on 2026-10-01: "The city moved its data to data.sf.gov and the old address stopped allowing browser requests."
-- Search results now point to `data.sf.gov` pages for this dataset (4.1) [V-x].
-- **What it means for O6.** The person approved `data.sfgov.org` by name. A native `URLSession` follows redirects by default [I], so the app's real runtime destination is `data.sf.gov`. A web app's would simply fail.
-- **This is the person's decision:** extend O6 to `data.sf.gov` (same publisher, new name), or keep the app on bundled snapshots only until they do. My recommendation is to extend it. Until then, #4 can be built and tested entirely on the snapshot.
+- **Verified [V].** Every request in 4.7 went to `data.sfgov.org`, and every one was answered first with `HTTP/1.1 301 Moved Permanently` and a `Location:` on `data.sf.gov`. The 200 responses then came from `data.sf.gov`. The `Location:` lines, verbatim from each `.headers` file on branch [`data/sf-street-sweeping`](https://github.com/chamaya00/sf-street-cleaning-reminders/tree/data/sf-street-sweeping) ([run 38877227921](https://github.com/chamaya00/sf-street-cleaning-reminders/actions/runs/38877227921)):
 
-### 4.7 PENDING: needs a live fetch from data.sfgov.org
+  ```
+  1-metadata.headers:             Location: https://data.sf.gov/api/views/yhqp-riqs.json
+  2-sample5.headers:              Location: https://data.sf.gov/resource/yhqp-riqs.json?%24limit=5
+  3-week-patterns.headers:        Location: https://data.sf.gov/resource/yhqp-riqs.json?%24group=week1%2Cweek2%2Cweek3%2Cweek4%2Cweek5&%24order=n%20DESC&%24select=week1%2Cweek2%2Cweek3%2Cweek4%2Cweek5%2Ccount%28%2A%29%20AS%20n
+  4-holidays-hours.headers:       Location: https://data.sf.gov/resource/yhqp-riqs.json?%24group=holidays%2Cfromhour%2Ctohour&%24order=n%20DESC&%24select=holidays%2Cfromhour%2Ctohour%2Ccount%28%2A%29%20AS%20n
+  5-one-block-both-sides.headers: Location: https://data.sf.gov/resource/yhqp-riqs.json?%24where=cnn%3D%278753101%27
+  ```
 
-> **PENDING: needs a live fetch from data.sfgov.org.** This environment's network policy denies `data.sfgov.org` (and `data.sf.gov`). No record below has been fetched, and none has been reconstructed. Criterion 2's check ("each named field appears in a sample record quoted in the document, next to the `data.sfgov.org` request that returned it") is **not met** until someone runs these requests and pastes the raw responses here, each under its request.
+  Each 301 also carries `Access-Control-Allow-Origin: https://data.sfgov.org`, and the metadata names its own host: `"domainCName" : "data.sf.gov"` (request 1).
+- **Who saw it first:** [curb#26](https://github.com/alevizio/curb/issues/26), 2026-09-09 [S]: "the server returns an HTTP 301/302 redirect to `https://data.sf.gov/resource/...`" and browsers then fail on CORS. The maintainer replied on 2026-10-01: "The city moved its data to data.sf.gov and the old address stopped allowing browser requests."
+- **What it means for O6: settled by the person.** Under O12 and D5 the phone never calls `data.sfgov.org` or `data.sf.gov`. The weekly Action on GitHub's runner does, and the phone reads only `chamaya00.github.io`. The open question the first version of this section asked is closed.
 
-Run each request against `data.sfgov.org` exactly as written. Use `-L` so that a redirect to `data.sf.gov` is followed, and keep `-sS -D -` so the redirect itself is recorded too: that record is the evidence for 4.6. If `data.sfgov.org` refuses outright, repeat with the host replaced by `data.sf.gov` and say so next to the response.
+### 4.7 The live fetch: criterion 2's check
+
+**Criterion 2's check is met.** Every field named in 4.2 appears below in a record or response quoted from `data.sfgov.org`, next to the request that returned it.
+
+The requests ran on a GitHub-hosted runner on **2026-10-16T08:58:18Z**, in [run 38877227921](https://github.com/chamaya00/sf-street-cleaning-reminders/actions/runs/38877227921), against `data.sfgov.org` with `curl -sS -L -D -`. That way each redirect was followed and recorded. The raw bodies and headers are committed on branch [`data/sf-street-sweeping`](https://github.com/chamaya00/sf-street-cleaning-reminders/tree/data/sf-street-sweeping), one `.body` and one `.headers` file per request, plus a `README.md`. Everything below is copied from those files, and nothing is reconstructed. Each request was answered `301` to `data.sf.gov` and then `200`; the `Location:` lines are quoted in 4.6. Request 6, the full table, is #4's fixture and is not reproduced here. Section 4 cites it only for two counts and its headers.
+
+#### Request 1: metadata
 
 ```sh
-# 1. Metadata: exact column names, column descriptions, rowsUpdatedAt, the geometry column's name and type
 curl -sS -L -D - 'https://data.sfgov.org/api/views/yhqp-riqs.json'
+```
 
-# 2. Five complete sample records (every field, including geometry)
+Source: [`1-metadata.body`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/1-metadata.body), [`1-metadata.headers`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/1-metadata.headers), run 38877227921. The response is 920 lines, so these are verbatim excerpts, with the file's line numbers on the left:
+
+```
+2    "id" : "yhqp-riqs",
+3    "name" : "Street Sweeping Schedule",
+4    "assetType" : "dataset",
+5    "attribution" : "San Francisco Public Works",
+13   "domainCName" : "data.sf.gov",
+24   "publicationDate" : 1738000541,
+27   "rowsUpdatedAt" : 1778758589,
+...
+749  }, {
+750    "id" : 604564234,
+751    "name" : "Holidays",
+752    "dataTypeName" : "number",
+753    "description" : "1= swept on holidays",
+754    "fieldName" : "holidays",
+755    "position" : 15,
+...
+886  "Data change frequency" : "As needed",
+887  "Program link" : "",
+888  "Publishing frequency" : "As needed",
+...
+892  "rowLabel" : "Sweeping block schedule",
+```
+
+The `description` string on line 10 contains the substring `<strong>C. UPDATE PROCESS</strong>\nThis dataset will be updated on an 'as needed' basis, when sweeping schedules change.` The other 16 columns carry the same four keys (`name`, `dataTypeName`, `description`, `fieldName`). The table in 4.2 copies them verbatim, together with the value counts each column's `cachedContents` reports.
+
+#### Request 2: five complete records
+
+```sh
 curl -sS -L -D - -G 'https://data.sfgov.org/resource/yhqp-riqs.json' --data-urlencode '$limit=5'
+```
 
-# 3. Every week-of-month pattern that occurs, and how often (settles 4.3 and the 5th-week semantics)
+Source: [`2-sample5.body`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/2-sample5.body), [`2-sample5.headers`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/2-sample5.headers), run 38877227921. The first record is verbatim below, except that its last member, `line`, has been moved to its own block:
+
+```json
+{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"L","blockside":"SouthEast","fullname":"Tuesday","weekday":"Tues","fromhour":"5","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1640782"}
+```
+
+Its geometry, the `line` member:
+
+```json
+"line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}
+```
+
+The response headers list the fields and their types:
+
+```
+X-SODA2-Fields: ["cnn","corridor","limits","cnnrightleft","blockside","fullname","weekday","fromhour","tohour","week1","week2","week3","week4","week5","holidays","blocksweepid","line"]
+X-SODA2-Types: ["text","text","text","text","text","text","text","number","number","number","number","number","number","number","number","number","line"]
+Last-Modified: Thu, 14 May 2026 11:36:29 GMT
+```
+
+Records 2–5 in the same file carry the same 17 members. Section 5.2 uses all five rows' geometry.
+
+#### Request 3: every week-of-month pattern
+
+```sh
 curl -sS -L -D - -G 'https://data.sfgov.org/resource/yhqp-riqs.json' \
   --data-urlencode '$select=week1,week2,week3,week4,week5,count(*) AS n' \
   --data-urlencode '$group=week1,week2,week3,week4,week5' \
   --data-urlencode '$order=n DESC'
+```
 
-# 4. The holidays flag: its values and how they line up with the hours (settles 4.4)
+Source: [`3-week-patterns.body`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/3-week-patterns.body), [`3-week-patterns.headers`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/3-week-patterns.headers), run 38877227921. The full response:
+
+```json
+[{"week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","n":"23908"}
+,{"week1":"0","week2":"1","week3":"0","week4":"1","week5":"0","n":"6880"}
+,{"week1":"1","week2":"0","week3":"1","week4":"0","week5":"0","n":"4367"}
+,{"week1":"1","week2":"0","week3":"1","week4":"0","week5":"1","n":"2287"}
+,{"week1":"0","week2":"1","week3":"0","week4":"1","week5":"1","n":"334"}
+,{"week1":"1","week2":"0","week3":"0","week4":"0","week5":"0","n":"102"}]
+```
+
+#### Request 4: the holidays flag against the hours
+
+```sh
 curl -sS -L -D - -G 'https://data.sfgov.org/resource/yhqp-riqs.json' \
   --data-urlencode '$select=holidays,fromhour,tohour,count(*) AS n' \
   --data-urlencode '$group=holidays,fromhour,tohour' \
   --data-urlencode '$order=n DESC'
-
-# 5. Both sides of one block, to see whether L and R share one centreline geometry (settles section 5's geometry question).
-#    Use the cnn of the first record from request 2 in place of <CNN>.
-curl -sS -L -D - -G 'https://data.sfgov.org/resource/yhqp-riqs.json' \
-  --data-urlencode "\$where=cnn='<CNN>'"
-
-# 6. The full table for the snapshot fixture #4 commits (record the retrieval date and the rowsUpdatedAt value from request 1 beside it)
-curl -sS -L -o yhqp-riqs.csv 'https://data.sfgov.org/api/views/yhqp-riqs/rows.csv?accessType=DOWNLOAD'
 ```
 
-What the person running them pastes back, for each field in 4.2: the raw JSON record from request 2 that shows it, directly under request 2's command line. For requests 3 to 5, paste the raw responses. If `cnn` is numeric rather than text, request 5 needs `$where=cnn=<CNN>` without quotes. The metadata from request 1 says which.
+Source: [`4-holidays-hours.body`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/4-holidays-hours.body), [`4-holidays-hours.headers`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/4-holidays-hours.headers), run 38877227921. The full response:
+
+```json
+[{"holidays":"0","fromhour":"2","tohour":"6","n":"4418"}
+,{"holidays":"0","fromhour":"6","tohour":"8","n":"4239"}
+,{"holidays":"0","fromhour":"8","tohour":"10","n":"4210"}
+,{"holidays":"0","fromhour":"9","tohour":"11","n":"4099"}
+,{"holidays":"0","fromhour":"12","tohour":"14","n":"3560"}
+,{"holidays":"0","fromhour":"7","tohour":"8","n":"3431"}
+,{"holidays":"0","fromhour":"4","tohour":"6","n":"1992"}
+,{"holidays":"0","fromhour":"0","tohour":"6","n":"1564"}
+,{"holidays":"1","fromhour":"2","tohour":"6","n":"1405"}
+,{"holidays":"0","fromhour":"13","tohour":"15","n":"1386"}
+,{"holidays":"0","fromhour":"0","tohour":"2","n":"1348"}
+,{"holidays":"0","fromhour":"7","tohour":"9","n":"879"}
+,{"holidays":"0","fromhour":"10","tohour":"12","n":"756"}
+,{"holidays":"0","fromhour":"11","tohour":"13","n":"743"}
+,{"holidays":"0","fromhour":"5","tohour":"7","n":"734"}
+,{"holidays":"0","fromhour":"8","tohour":"11","n":"568"}
+,{"holidays":"0","fromhour":"12","tohour":"15","n":"518"}
+,{"holidays":"1","fromhour":"5","tohour":"7","n":"414"}
+,{"holidays":"1","fromhour":"0","tohour":"2","n":"360"}
+,{"holidays":"0","fromhour":"5","tohour":"6","n":"240"}
+,{"holidays":"1","fromhour":"4","tohour":"6","n":"169"}
+,{"holidays":"0","fromhour":"3","tohour":"5","n":"165"}
+,{"holidays":"1","fromhour":"0","tohour":"6","n":"118"}
+,{"holidays":"0","fromhour":"6","tohour":"7","n":"114"}
+,{"holidays":"1","fromhour":"6","tohour":"8","n":"113"}
+,{"holidays":"1","fromhour":"1","tohour":"3","n":"90"}
+,{"holidays":"0","fromhour":"8","tohour":"9","n":"71"}
+,{"holidays":"0","fromhour":"10","tohour":"15","n":"49"}
+,{"holidays":"1","fromhour":"1","tohour":"6","n":"35"}
+,{"holidays":"0","fromhour":"1","tohour":"6","n":"26"}
+,{"holidays":"0","fromhour":"2","tohour":"3","n":"24"}
+,{"holidays":"1","fromhour":"2","tohour":"4","n":"22"}
+,{"holidays":"0","fromhour":"2","tohour":"5","n":"9"}
+,{"holidays":"1","fromhour":"3","tohour":"5","n":"7"}
+,{"holidays":"0","fromhour":"1","tohour":"2","n":"2"}]
+```
+
+The `n` values sum to 37,878, so these groups cover every row.
+
+#### Request 5: both sides of one block
+
+The CNN is the first record's from request 2, `8753101`. It is quoted as text because the metadata types `cnn` as `text`.
+
+```sh
+curl -sS -L -D - -G 'https://data.sfgov.org/resource/yhqp-riqs.json' \
+  --data-urlencode "\$where=cnn='8753101'"
+```
+
+Source: [`5-one-block-both-sides.body`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/5-one-block-both-sides.body), [`5-one-block-both-sides.headers`](https://github.com/chamaya00/sf-street-cleaning-reminders/blob/data/sf-street-sweeping/5-one-block-both-sides.headers), run 38877227921. The full response, 13 rows:
+
+```json
+[{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"L","blockside":"SouthEast","fullname":"Tuesday","weekday":"Tues","fromhour":"5","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1640782","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"R","blockside":"NorthWest","fullname":"Tuesday","weekday":"Tues","fromhour":"2","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1642430","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"R","blockside":"NorthWest","fullname":"Wednesday","weekday":"Wed","fromhour":"2","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1642517","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"L","blockside":"SouthEast","fullname":"Friday","weekday":"Fri","fromhour":"5","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1640713","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"L","blockside":"SouthEast","fullname":"Saturday","weekday":"Sat","fromhour":"5","tohour":"7","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"1","blocksweepid":"1618088","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"L","blockside":"SouthEast","fullname":"HOLIDAY","weekday":"Holiday","fromhour":"5","tohour":"7","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"1","blocksweepid":"1640736","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"L","blockside":"SouthEast","fullname":"Sunday","weekday":"Sun","fromhour":"5","tohour":"7","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"1","blocksweepid":"1618101","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"L","blockside":"SouthEast","fullname":"Wednesday","weekday":"Wed","fromhour":"5","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1640805","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"R","blockside":"NorthWest","fullname":"Monday","weekday":"Mon","fromhour":"2","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1642343","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"R","blockside":"NorthWest","fullname":"Thursday","weekday":"Thu","fromhour":"2","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1642604","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"L","blockside":"SouthEast","fullname":"Thursday","weekday":"Thu","fromhour":"5","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1640828","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"L","blockside":"SouthEast","fullname":"Monday","weekday":"Mon","fromhour":"5","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1640759","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}
+,{"cnn":"8753101","corridor":"Market St","limits":"Larkin St  -  Polk St","cnnrightleft":"R","blockside":"NorthWest","fullname":"Friday","weekday":"Fri","fromhour":"2","tohour":"6","week1":"1","week2":"1","week3":"1","week4":"1","week5":"1","holidays":"0","blocksweepid":"1642691","line":{"type":"LineString","coordinates":[[-122.416291701103,37.777493843394],[-122.416317106137,37.777410028361],[-122.417392074888,37.776560951931],[-122.417501462483,37.776540893509]]}}]
+```
+
+**Where each 4.2 field appears.**
+- In request 2's first record: `cnn`, `corridor`, `limits`, `cnnrightleft` (block side), `blockside` (block side), `weekday` and `fullname` (weekday), `fromhour` and `tohour` (hours), `week1`–`week5` (week of month, including `week5`), `holidays` (holiday behaviour), `blocksweepid` and `line`.
+- `weekday` `"Holiday"` (the separate holiday schedule): request 5, sixth row.
+- Every week pattern and every `holidays`/hours combination: requests 3 and 4.
+- The city's own meaning for each column: request 1.
 
 ---
 
@@ -346,10 +538,18 @@ What the person running them pastes back, for each field in 4.2: the raw JSON re
 
 ### 5.2 Can the dataset's geometry tell a block's two sides apart?
 
-- **Not by position, on present evidence [I].** Each row carries a line, and the two sides of a block are two rows with the same `cnn` and opposite `cnnrightleft`. If, as I infer, both rows carry the same centreline, then geometry alone puts the two sides at the same place.
-- A point can still be classified: compute which side of the *directed* centreline it lies on (the sign of a cross product), then match it to the row whose `cnnrightleft` names that side. That works only if L/R is relative to the line's digitised direction.
-- `blockside` (North/South/...) gives a second, independent check: an east-west block's north-side row should be the one whose side the point is on when the point is north of the line [I].
-- **Pending:** request 5 in 4.7 shows whether L and R rows share a geometry. #6 should pin the L/R convention against one block whose cardinal side a person has checked on the street.
+- **Not by position [V].** In request 5, all 13 rows for CNN 8753101 share one and the same `LineString`, coordinate for coordinate. That covers both L/SouthEast rows and R/NorthWest rows. The dataset draws each block as its centreline only, so geometry alone puts the two sides at the same place. No distance to a "side line" exists to measure.
+- **What side resolution has to be [I].** Compute which side of the *directed* centreline the fix lies on, from the sign of a cross product against the segment nearest the fix. Then pick the rows of that `cnn` whose `cnnrightleft` names that side.
+  - **This works only if L and R are relative to the line's digitised direction (first coordinate to last).** The data supports that on every row I could check [I, computed from verified coordinates]. Market St's line runs from its north-east end to its south-west end, and the left of that direction is south-east: L is `SouthEast` and R is `NorthWest` (request 5).
+  - The same test agrees on the other four rows of request 2:
+    - Lower Great Hwy is drawn southward, so its right is west: R/West ✓.
+    - 08th Ave is drawn southward, so its left is east: L/East ✓.
+    - Alemany Blvd is drawn west-south-west, so its left is south-east: L/SouthEast ✓.
+    - Laguna St is drawn northward, so its right is east: R/East ✓.
+  - That is five blocks, not 37,878 rows. #6 should run the same check over the whole fixture, as a test, and pin it against one block whose side a person has checked on the street.
+- **`blockside` gives the words for the side choice [V for the values; I for the use].** Each row names its side as a compass direction: North, South, East, West, NorthEast, NorthWest, SouthEast or SouthWest (request 1). When a fix is "can't tell", the one-tap choice (5.3, and #5's design) can read the block's two `blockside` values and offer them in plain words, for example "South-east side" and "North-west side" on Market St. That beats "left" and "right", which mean nothing to a person standing at the car.
+  - `blockside` is **null on 839 rows** (request 1). For those, #5 needs a fallback wording, such as the cross streets in `limits` with "this side" or "the other side". #6 should treat a null side name as "no label", never as "no sweeping".
+  - `blockside` is also a cross-check on the L/R reading above: a fix the cross product puts on a block's left should be on that block's `blockside` compass side [I].
 
 ### 5.3 The ambiguity rule (copy this into #6 and #7)
 
@@ -384,6 +584,13 @@ Two companion rules, the same shape, so "can't tell" also covers *which block*:
 ---
 
 ## 6. What the CI gate can prove for the recommended route
+
+> **Route changed in revision round 1 (2026-10-16).** This section was written for route 3.3, and the Swift commands below no longer apply. Under ADR 0001 as rewritten (Scriptable, D4), the answers to criterion 4 are:
+> - **The gate's Linux runner** runs `node --test` against the dependency-free JavaScript module. Node is on the `ubuntu-24.04` image ([runner image readme](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)) [V]. The module holds the same list of logic as the `SweepCore` list below. The DST caveat changes form: Node on Linux and Scriptable on iOS are different JavaScript engines with different time zone data, so #7's device check should cover one DST date [I].
+> - **Only the iPhone** can verify the items in the addendum (9.4): the automation firing, a notification arriving with Scriptable closed, the Clock alarm, and the Lock Screen widget.
+> - **What the person installs** is the scripts GitHub Pages serves, fetched by the installer script. Pages copies the tested module without a build step, but the gate does not run the Pages workflow (ADR 0001).
+>
+> #4's CI swap is written against the ADR, not against the Swift commands below.
 
 **On the gate's Linux runner.** Swift 6.4 is on `ubuntu-24.04` ([runner image](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)) [V]. The command path runs `swift build && swift test` on a SwiftPM package, call it `SweepCore`, that imports only Foundation. The package holds:
 - parsing of the committed DataSF snapshot fixture;
@@ -430,11 +637,18 @@ Each of these is a finding: the ground is thinner there than the rest of the doc
 | A Shortcuts action that schedules a notification for later | None found. Only the immediate "Show Notification". |
 | Whether notifications already scheduled by a free-sideloaded app still fire after its 7-day profile expires | No source either way. |
 | A newer Apple API for the Maps parked-car location than the 2020 "there is no API" answer | None. |
-| A city or Public Works statement of how week-of-month and a 5th week are counted | None. Section 4.3 is an inference pending check 3. |
-| The meaning of the dataset's `holidays` flag | None. Pending check 4. |
+| A city or Public Works statement of how week-of-month and a 5th week are counted | Still none. The data now shows that a 5th week is an explicit flag on every row (4.3). What "week *N*" counts is still an inference, now well supported. |
+| The meaning of the dataset's `holidays` flag | **No longer empty.** The metadata's column description says "1= swept on holidays" (4.2, request 1). |
 | A study comparing iOS's *reported* `horizontalAccuracy` with true error in urban canyons, or any measurement of current iPhones on SF streets | None. Only the iPhone 6 study and a non-iPhone dual-frequency study. |
 | A cited curb-to-curb width for typical SF residential streets | None. Planning Code results give sidewalk widths, not roadway. |
-| Scriptable's current maintenance status (App Store version history) | Unreachable host. The aggregator contradicts itself. |
+| Scriptable's current maintenance status (App Store version history) | Unreachable host. The aggregator contradicts itself. Revision round 1: the newest version any source shows is 1.7.19, undated. No 2025–2026 release note or iOS 26 statement turned up in two searches (9.2). |
+| *Revision round 1, Scriptable addendum (9.4):* `docs.scriptable.app` itself | Does not resolve from this environment (`ENOTFOUND`). Read instead through the DefinitelyTyped declarations generated from it and through search excerpts. A 2026-03-20 commit in the types project says the docs' definition file is "no longer online" (9.2). |
+| An Apple page documenting the Shortcuts *Create Alarm* action and its parameters | None. Apple's Shortcuts guide does not document individual Clock actions. The only reference is third-party (9.4, point 5). |
+| A Shortcuts *Delete Alarm* action | None found. Only Create Alarm, Toggle Alarm, Get All Alarms and Start Timer. |
+| Whether the Create Alarm action asks for confirmation inside an automation set to run without asking | No source either way. Device check. |
+| Whether Shortcuts exposes a location's horizontal accuracy (for example through *Get Details of Locations*) | None. |
+| Whether Scriptable's `Location.current()` works in a script started by a background Shortcuts automation | None. |
+| Reports of Scriptable *scheduled notifications* failing to arrive (r/Scriptable, talk.automators.fm) | None. The only failure reports are widgets erroring after the iOS 17 and iOS 18.4 updates (9.2). |
 | How CURB or SpotAngels handle an undecidable side of the street | Not documented in either README or listing. |
 | Reports from people who built a personal iPhone app on the paid account and regretted the route | No regret reports. The closest are the two August 2026 TestFlight team-wide expiry threads in section 9. |
 
@@ -442,17 +656,26 @@ Each of these is a finding: the ground is thinner there than the rest of the doc
 
 ## 8. Load-bearing assumptions
 
-1. **The person has, or can borrow, a Mac with current Xcode, at least once.** The recommendation flips if not (section 9).
+1. **The person has, or can borrow, a Mac with current Xcode, at least once.** **Answered: no** (O9). The recommendation flipped to 3.5 (D4, ADR 0001, section 9.4).
 2. **The car has CarPlay or Bluetooth.** If neither, capture is a one-press Lock Screen control rather than 0 taps. All routes are affected, 3.3 least.
 3. **The iPhone runs iOS 26 or later** (iOS 27 shipped on 2026-09-14 per [Wikipedia's iOS version history, via search excerpt](https://en.wikipedia.org/wiki/IOS_version_history) [S]). AlarmKit and `supportedModes` need iOS 26 [V]. On iOS 18 the urgent reminder falls back to Time Sensitive only.
 4. **`horizontalAccuracy` behaves roughly like a one-sigma radius.** Apple does not say (5.1). The 2·*h* margin rests on this.
 5. **SF curb-parked cars sit about 4–6 m from the block centreline.** This drives the "most fixes are can't-tell" expectation, not the rule itself.
-6. **`cnnrightleft` is relative to the segment's digitised direction.** The side classification in 5.2 rests on it. Pending check 5, plus a street check by a person.
-7. **The person will extend O6 to `data.sf.gov`** (4.6). Until then, the app runs on snapshots only.
+6. **`cnnrightleft` is relative to the segment's digitised direction.** The side classification in 5.2 rests on it. It now holds on all five blocks checked (5.2), so it is an inference rather than a bare assumption. #6 still checks the whole table, plus one street check by a person.
+7. ~~The person will extend O6 to `data.sf.gov`.~~ **Settled differently** (O12, D5): the phone never calls DataSF (4.6).
+8. **Scriptable keeps working on the person's iOS version** (revision round 1). Its maintenance could not be verified (9.2), and the route depends on it.
 
 ---
 
 ## 9. Recommendation
+
+> **Revision round 1 (2026-10-16).** The recommendation below was written on 2026-10-14, under assumption 1 (a Mac). The person has no Mac (O9). The first condition in 9.3 was met, and the driver chose route 3.5, Scriptable (D4 and D5 on #2). ADR 0001 now records that route.
+>
+> This section keeps the original recommendation and its argument (9.1) as the record of the comparison, and adds:
+> - the strongest argument against Scriptable, beside the old one (9.2);
+> - an addendum that verifies what the Scriptable route relies on (9.4), including what would flip it back and the steps only the person can take on it.
+>
+> **The addendum does not find the one thing that would reopen D4:** Scriptable can schedule a notification for a future date that is delivered while the app is closed.
 
 **Build route 3.3: a native SwiftUI app on the paid Apple Developer account.**
 
@@ -474,7 +697,7 @@ It is the only route where every requirement on #1 rests on a verified Apple mec
 
 It costs exactly what O4 already accepted.
 
-### The strongest argument against it
+### 9.1 The strongest argument against route 3.3 (2026-10-14)
 
 I looked for this one rather than imagining it. The parts of this route the person actually feels are the capture firing and the reminder arriving, and those are exactly the parts no gate can test. The channel that delivers the app to the phone has failed recently in a way that would stop the product silently. In August 2026 two developers reported every TestFlight build on their team going "Expired" at once. Fresh uploads then failed to install with "The requested app is not available or doesn't exist", there was no Apple reply in either thread, and the problem was still unresolved weeks later ([thread 841782](https://developer.apple.com/forums/thread/841782), [thread 848523](https://developer.apple.com/forums/thread/848523)) [S].
 
@@ -482,14 +705,133 @@ Put that next to the Mac requirement, which nobody has confirmed. Route 3.5 (Scr
 
 **Why it still loses.** A TestFlight outage blocks *updates*, while the installed build keeps running until its 90 days are up [V]. #7 can add a "build expires on <date>" line to the widget so expiry is never silent [I]. The fallback path, a direct Xcode install with a one-year profile, avoids TestFlight entirely. Scriptable's ceiling cannot be raised by this project at all.
 
-### What would have to change for the answer to flip
+### 9.2 The strongest argument against Scriptable (revision round 1, 2026-10-16)
+
+I went looking for people who built on Scriptable and regretted it, and for signs that it is no longer maintained. Here is what came back.
+
+**The product's whole runtime would rest on one free app by one developer, whose latest release I could not date.**
+- The newest version any source shows is 1.7.19, with no date ([App Store listing, via search excerpt](https://apps.apple.com/it/app/1405459188)) [S].
+- In the type-definition project that mirrors Scriptable's API, the most recent commit that names a Scriptable version is dated 2022-11-13 ("update for Scriptable 1.7"). Its ten most recent commits (March to August 2026) are all dependency bumps.
+- On 2026-03-20 that project's maintainer committed the docs' definition file "since it is no longer online" ([schl3ck/ios-scriptable-types, commit 0acef2b](https://github.com/schl3ck/ios-scriptable-types/commit/0acef2bb0d457a5bf4ab81f4a3dec903f65adf06); [commit history](https://github.com/schl3ck/ios-scriptable-types/commits/master)) [V, the commits]. I infer from this that part of docs.scriptable.app has stopped being served [I]. That fits the docs host failing to resolve here, though many hosts fail here.
+
+**Forward evidence from people who used it.**
+- After the iOS 17 update, a user's unchanged widget script started throwing a `TypeError`. It was fixed by retrieving a settings file that iCloud had offloaded ([talk.automators.fm thread](https://talk.automators.fm/t/scriptable-on-ios-throwing-new-typeerror-maybe-app-update-maybe-ios-17-0-1-maybe-something-else/16586), via search excerpt) [S].
+- After iOS 18.4, widgets showed errors until the script was run by hand, and commenters said they were waiting on a fix ([r/Scriptable, "iOS 18.4 issues", via a Reddit mirror's search excerpt](https://redlib.ssps.io/r/Scriptable/comments/1jtsc2h/ios_184_issues)) [S].
+- I found no report of Scriptable's *scheduled notifications* failing (section 7). Both reports are about widgets.
+
+**Why that matters here [I].** If an iOS release breaks Scriptable's notifications, this project cannot patch it, and a heads-up that silently stops arriving is exactly the false "you're fine" the objective exists to prevent. The route also has more seams than the native one:
+- three automations, one of them daily;
+- an alarm that can only be created within 24 hours of the window (9.4, point 5);
+- a Focus pass that depends on per-Focus settings;
+- possibly no location accuracy, so more "can't tell" (9.4, point 4).
+
+**Compared with 9.1.** A TestFlight failure blocks updates while the installed build keeps working, and it has a visible expiry date. A Scriptable failure could stop the installed product itself. On failure mode alone, this argument is stronger than the one against 3.3.
+
+**Why the route still stands.**
+- The native route cannot reach the phone without a Mac, or without an App Store Connect key the person would have to approve (O9). The person chose this trade knowingly (O11–O13).
+- The loudest channel, the urgent Clock alarm, is Apple's own app. Only *computing* its time runs in Scriptable [I].
+- The widget's "last checked" line and the daily automation make a dead Scriptable visible within about a day rather than never [I].
+- The logic lives in a plain JavaScript module, so the tests survive any later move [I].
+
+### 9.3 What would have to change for the answer to flip (2026-10-14)
+
+**The first condition below was met on 2026-10-16 (O9, D4).** The conditions that would flip Scriptable back are in 9.4.
 
 - **No Mac, and no CI credential.** If the person has no Mac and will not approve an App Store Connect API key for a macOS GitHub runner, pick **3.5 Scriptable**: everything else is equal or better there. Before that, it is worth one spike behind its own issue on `xtool`, which claims to "build and deploy iOS apps with SwiftPM on Linux, Windows, and macOS" ([xtool](https://github.com/xtool-org/xtool)) [S]. Its support for widget extensions, App Intents and the Time Sensitive capability is unverified.
 - **Apple's paid account stops being acceptable.** Again **3.5**, not the 7-day sideload.
 - **Time Sensitive turns out to be unavailable** for the person's account type, *and* the phone is below iOS 26. The urgent reminder then rests on the allowed-apps setting alone, which removes 3.3's main delivery advantage over 3.5.
 - **A week's trial of an existing app (3.6)** shows it handles "can't tell" honestly. The cheapest answer is then not to build.
 
-### Steps only the person can take on this route
+### 9.4 Scriptable addendum (revision round 1, 2026-10-16)
+
+ADR 0001 now rests on six things Scriptable and Shortcuts have to do. `docs.scriptable.app` does not resolve from this environment, so the Scriptable claims come from two places:
+- **The DefinitelyTyped declarations** ([`index.d.ts`](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/scriptable-ios/index.d.ts), package version 1.7.x). They are generated from the docs' own definition file and carry its text as comments. Tagged **[V from types]**, as in 3.5.
+- **Search-index excerpts of docs.scriptable.app**, tagged [V-x].
+
+| # | Question | Verdict |
+|---|---|---|
+| 1 | Schedule a notification for a future date that fires with the app closed? Does the app need to run again? | **Yes [V-x]. No**: delivery does not need the app to run again. The review's flip condition is **not** met |
+| 2 | Notification actions or `openURL` for the one-tap side choice? | **Yes**, but tapping opens Scriptable, and it is two taps |
+| 3 | Lock Screen (accessory) widgets? | **Yes**, from iOS 16. Refresh timing belongs to iOS |
+| 4 | Location from Shortcuts into a script? | **Yes, as a dictionary**. The fix's accuracy may not come with it |
+| 5 | Shortcuts **Create Alarm** on current iOS, and runs without asking? | **Exists [S]**, but it sets a time, not a date. Unattended running is verified for the automation, not for the action |
+| 6 | Download and replace its own files? | **Yes**, all the pieces are documented [V from types] |
+
+**1. A future notification fires with Scriptable closed.**
+- Scriptable's notification page says "A notification may be delivered even when Scriptable is not running" and points to `setTriggerDate` for a future delivery date ([docs.scriptable.app/notification](https://docs.scriptable.app/notification/), the same sentence in two separate search excerpts) [V-x].
+- The declarations add [V from types]:
+  - `setTriggerDate`: "Sets the notification to be triggered on a date and time."
+  - `schedule()`: "When a new notification is constructed, it must be scheduled, otherwise it will not be delivered."
+  - `identifier`: "To reschedule a notification, use the identifier of an existing notification."
+  - `removePending(ids)`, `allPending()` and a read-only `nextTriggerDate`.
+- That API mirrors Apple's local notifications: pending and delivered requests, and a next trigger date. For those, "Your app does not need to be running for the system to deliver the notification" ([Apple archived guide, via search excerpt](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/SchedulingandHandlingLocalNotifications.html)) [V-x]. That Scriptable uses that mechanism is an inference from the API's shape [I].
+- The script has to run again only to schedule *later* windows. It does: at every capture, and daily for the alarm (point 5).
+- **So the condition the review named for reopening D4 is not met.** #7's device check confirms it on the phone with Scriptable force-quit.
+
+**2. The side choice can ride on notification actions.**
+- `addAction(title, url, destructive)`: "Actions are shown as buttons in the notification." Up to ten when space allows, and at most two when it is limited, which is exactly two sides [V from types].
+- `openURL`: "The Scriptable application will open the URL when the notification is tapped." [V from types].
+- A `scriptable:///run/<script>?side=…` URL reaches the script as `args.queryParameters`: "Query parameters are supplied to a script when running it from a URL scheme." `URLScheme.forRunningScript()` returns that URL [V from types].
+- So the choice costs two taps (expand, then tap e.g. "South-east side", labelled from `blockside` as in 5.2), and **Scriptable comes to the foreground** [I].
+- `scriptName` can run a script inside the expanded notification without opening the app [V from types]. Whether that view accepts a tap that reschedules is unverified, and is #5's and #7's to try.
+
+**3. Lock Screen widgets are supported.**
+- `config.widgetFamily` includes `accessoryRectangular`, `accessoryInline` and `accessoryCircular`, "only available starting from iOS 16" [V from types].
+- `config.runsInAccessoryWidget`: "These widgets can appear on the Lock Screen." [V from types].
+- Refresh is not the script's to decide: `refreshAfterDate` "It is not guaranteed that the widget will refresh at exactly the specified date. The refresh rate of a widget is partly up to iOS/iPadOS." [V from types].
+- So the widget computes today and tomorrow from stored windows at render time, and shows when it last checked [I].
+
+**4. Shortcuts can pass a location, but probably not its accuracy.**
+- `args.shortcutParameter` "can be any text, list, dictionary or file and will be exposed in your script using the appropriate type" [V from types].
+- A Shortcuts location value is none of those, so the Shortcut has to turn it into a dictionary of latitude and longitude first [I].
+- I found no source saying Shortcuts exposes a location's horizontal accuracy (section 7).
+- Scriptable's own `Location.current()` returns `horizontalAccuracy` alongside latitude and longitude [V from types]. Whether it works in a script started by a background automation is unverified (section 7).
+- **Consequence for #6 [I]:** a fix with no accuracy has an unknown *h*. The side rule in 5.3 resolves only when *h* ≤ 10 m, so such a fix is always "can't tell" and point 2's choice does the work. #7's device check decides which fix the capture uses.
+
+**5. Create Alarm exists, but it cannot be created at parking time.**
+- No Apple page I could reach documents the action (section 7).
+- A long-standing action reference lists **Create Alarm** with a time, a label and repeat days. It says the action always creates a new alarm, and that changing one means *Get All Alarms* then *Toggle Alarm* ([Cassinelli, Create Alarm](https://matthewcassinelli.com/actions/create-alarm/), via search excerpt) [S].
+- Apple's alarm page offers Repeat but no date ([Apple, set and change alarms](https://support.apple.com/118444), via search excerpt) [V-x].
+- **So a one-off alarm rings at the next occurrence of its time, within 24 hours [I].** One created at parking time would ring on the wrong day for any window more than a day away. The ADR therefore creates it from a daily **Time of Day** automation, which asks the script whether a window starts within the next 24 hours.
+- Running without asking:
+  - Apple's guide lists Time of Day among the automations that "can be run automatically" ([Shortcuts User Guide, via search excerpt](https://support.apple.com/guide/shortcuts/apd602971e63/ios)) [V-x].
+  - CarPlay and Bluetooth are on the iOS 26 list (3.1) [V-x].
+  - Whether the Create Alarm action itself asks for confirmation inside such an automation: no source either way. That is #7's to check.
+- Clearing: *Toggle Alarm* turns it off [S]. I found no *Delete Alarm* action (section 7), so turned-off alarms may pile up in Clock [I].
+- Alarms sound through Do Not Disturb and silent mode (3.1) [V-x].
+
+**6. A script can update itself from GitHub Pages.**
+- `Request.loadString()`: "The response is parsed to a string and provided when the returned promise is fulfilled." [V from types].
+- `FileManager.writeString`: "If the file already exists the contents of the file will be overwritten with the new content." [V from types].
+- `documentsDirectory`: "Your scripts are stored in this directory. If you have iCloud enabled, your scripts will be stored in the documents directory in iCloud otherwise they will be stored in the local documents directory." `downloadFileFromiCloud` brings down an iCloud file before it is read [V from types].
+- `importModule` searches the importing file's directory first and returns the module's `module.exports` [V from types].
+- So an installer script can fetch the scripts and the logic module from `chamaya00.github.io` and write them where Scriptable keeps scripts. Later runs can do the same when a newer version is published [I].
+- Two rules for the ADR [I]:
+  - write to a temporary file, and replace only after the download is complete and parses, so that an error page never overwrites a working script;
+  - write the module with `module.exports`, which both `importModule` and Node read.
+
+**What would flip the route back to native (D4's alternative, the TestFlight GitHub Action).**
+- #7's device check shows that a notification scheduled by a script that a Shortcuts automation started does not fire with Scriptable closed.
+- Create Alarm cannot run unattended, and no other loud channel replaces it.
+- Scriptable stops working on the person's iOS version, or leaves the App Store.
+- The person approves an App Store Connect API key and prefers Time Sensitive to a per-Focus allowed list.
+
+**Steps only the person can take on the Scriptable route** (D4's "still theirs", and O14's checklist):
+1. **Merge the weekly data-refresh workflow PR.** It widens what the automation may do, so it is theirs to merge (D4).
+2. **Turn on GitHub Pages** in the repository settings.
+3. **Install Scriptable** (free), and run the installer script once.
+4. **Create the three Shortcuts automations**, each set to run immediately, without asking:
+   - car disconnect: location, then run the capture script;
+   - car connect: run the clear script and turn off the alarm;
+   - daily at a set time: run the alarm script, then Create Alarm.
+5. **Allow notifications for Scriptable**, and location for Shortcuts (and for Scriptable, if #7's check uses its fix).
+6. **In every Focus they use (including Sleep):** add Scriptable to the allowed apps. There is no Time Sensitive level to rely on.
+7. **Add the Lock Screen widget.**
+8. **Verify on the device per #7's checklist**, with Scriptable force-quit and a Focus on.
+9. **Apply the `ci.yml` change on #4** when that PR exists.
+10. **Once a year:** update the holiday table when SFMTA publishes the next year.
+
+### 9.5 Steps only the person can take on route 3.3 (2026-10-14, superseded by 9.4)
 
 1. **Say whether a Mac with current Xcode is available.** This decides 3.3 vs 3.5.
 2. **Extend O6 to `data.sf.gov`** (4.6), or confirm that snapshot-only is acceptable for now.
@@ -503,4 +845,4 @@ Put that next to the Mac requirement, which nobody has confirmed. Route 3.5 (Scr
 10. **Verify on the device per #7's checklist**, with the app closed and a Focus on.
 11. **Once a year:** renew the membership, and update the holiday table when SFMTA publishes the next year.
 
-ADR 0001 ([`docs/decisions/0001-native-ios-app-with-shortcuts-capture.md`](../decisions/0001-native-ios-app-with-shortcuts-capture.md)) carries this recommendation as `Status: proposed`. The driver accepts or rewrites it under O5.
+ADR 0001 ([`docs/decisions/0001-scriptable-with-shortcuts-capture.md`](../decisions/0001-scriptable-with-shortcuts-capture.md)) was rewritten in revision round 1 to record route 3.5, Scriptable (D4, D5). The driver renamed it to match and accepted it under O5 (D6 on #2).

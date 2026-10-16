@@ -16,19 +16,24 @@ Reminds San Francisco drivers before street cleaning on the block where they par
 
 ## Stack
 
-Swift 6, chosen in `docs/decisions/0001-native-ios-app-with-shortcuts-capture.md`:
+JavaScript on Scriptable, chosen in `docs/decisions/0001-scriptable-with-shortcuts-capture.md`:
 
-- **Core.** A Foundation-only SwiftPM package holds the schedule, holiday and
-  side-of-street logic, and the gate builds and tests it on Linux.
-- **App.** A SwiftUI iOS app on the paid Apple Developer account, with a Lock
-  Screen widget. Parking is captured by an iOS Shortcuts automation that calls
-  the app's App Intent. Reminders are local notifications on the phone, with no
-  server.
-- **Publishing.** Xcode Cloud builds the app to TestFlight. The gate does not
-  run that build, and ADR 0001 records why and what covers the gap.
+- **Logic.** One dependency-free JavaScript module holds the schedule,
+  holiday, staleness and side-of-street logic. It calls neither Scriptable's
+  nor Node's APIs, and the gate tests it on Linux with `node --test`.
+- **On the iPhone.** Thin Scriptable scripts around that module, run by
+  Shortcuts personal automations (car disconnect to capture, car connect to
+  clear, a daily one for the Clock alarm), plus a Scriptable Lock Screen
+  widget. Reminders are Scriptable local notifications and a Clock alarm; there
+  is no server.
+- **Publishing.** A weekly GitHub Action builds a compact JSON from the city's
+  DataSF table and publishes it, with the scripts, on GitHub Pages
+  (`chamaya00.github.io`), the only host the phone talks to. An installer
+  script in Scriptable pulls updates from there. The gate does not run that
+  publish, and ADR 0001 records why and what covers the gap.
 
-The app target, the capture trigger and delivery under Focus can only be checked
-on the device, so #7's device checklist is the gate for those.
+Capture, delivery with Scriptable closed, the alarm and the widget can only be
+checked on the device, so #7's device checklist is the gate for those.
 
 ## Commands
 
