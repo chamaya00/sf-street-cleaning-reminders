@@ -16,19 +16,24 @@ Reminds San Francisco drivers before street cleaning on the block where they par
 
 ## Stack
 
-Not chosen yet. Provisioning fills this in when the repository already answers
-it - a manifest, a lockfile, code that is already here - and leaves this
-sentence standing when it does not. A greenfield repository is asked for its
-stack before anybody could know it, and a guess written here reads exactly like
-a decision somebody made.
+JavaScript on Scriptable, chosen in `docs/decisions/0001-scriptable-with-shortcuts-capture.md`:
 
-Choosing it changes a category, so it arrives as an ADR under
-`docs/decisions/`, and this section is rewritten in the same pull request.
+- **Logic.** One dependency-free JavaScript module holds the schedule,
+  holiday, staleness and side-of-street logic. It calls neither Scriptable's
+  nor Node's APIs, and the gate tests it on Linux with `node --test`.
+- **On the iPhone.** Thin Scriptable scripts around that module, run by
+  Shortcuts personal automations (car disconnect to capture, car connect to
+  clear, a daily one for the Clock alarm), plus a Scriptable Lock Screen
+  widget. Reminders are Scriptable local notifications and a Clock alarm; there
+  is no server.
+- **Publishing.** A weekly GitHub Action builds a compact JSON from the city's
+  DataSF table and publishes it, with the scripts, on GitHub Pages
+  (`chamaya00.github.io`), the only host the phone talks to. An installer
+  script in Scriptable pulls updates from there. The gate does not run that
+  publish, and ADR 0001 records why and what covers the gap.
 
-Nothing publishes this repository yet either. When something does, the question
-that matters is whether the gate runs what publishes it - the comment at the
-top of `.github/workflows/ci.yml` asks it at the moment it becomes answerable,
-which is the moment somebody replaces the gate.
+Capture, delivery with Scriptable closed, the alarm and the widget can only be
+checked on the device, so #7's device checklist is the gate for those.
 
 ## Commands
 
