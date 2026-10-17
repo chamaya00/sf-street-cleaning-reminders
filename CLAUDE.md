@@ -37,23 +37,22 @@ checked on the device, so #7's device checklist is the gate for those.
 
 ## Commands
 
-- Install: none yet - nothing to install until the stack is chosen.
-- Dev: none yet, for the same reason.
-- Checks CI runs: none of this project's own yet. The gate runs the scaffolding
-  checks written out in `.github/workflows/ci.yml` and nothing else.
+- Install: none. There are no dependencies and no package manager. Node 20 or
+  newer is the only requirement, for `node --test`.
+- Dev: none. The logic module, `src/sweeping.js`, is a plain file with no build
+  step.
+- Checks CI runs, from the repository root:
+  - `node --test` runs every test under `test/` against the logic module and
+    the committed fixture.
+  - `TZ=Asia/Tokyo node --test` runs the same suite under a host time zone far
+    from Pacific, because the module must never read the host's.
+  - The fixture re-run in `test/fixtures/README.md` must reproduce
+    `test/fixtures/yhqp-riqs.soda2.json` byte for byte from branch
+    `data/sf-street-sweeping`.
 
-Replace all three the moment there is something to name. On a Node project that
-is `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`. On a
-project with no package manager it might be a single `bash tests/check.sh`, and
-one check is a complete answer - name what this project has rather than the
-four a Node project would have.
-
-The checks above are what CI runs once the gate is real. Until then it is
-not: `.github/workflows/ci.yml` ships a placeholder that checks the scaffolding
-is intact and fails the moment product code lands, because a project gets its
-gate before it gets its stack and a gate that goes green on untested code is
-worse than no gate. Replacing it is a step in building this project, not a
-chore to do later - the comment at the top of that file says how.
+`.github/workflows/ci.yml` runs these on its `commands` path, which installs
+nothing, so the gate uses the Node that `ubuntu-latest` already has. Its first
+command prints that version and fails below 20.
 
 Whatever the gate runs, the rule is the same. If a check is renamed here,
 rename it in `.github/workflows/ci.yml` in the same commit, or the gate
