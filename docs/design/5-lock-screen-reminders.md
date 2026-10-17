@@ -28,7 +28,7 @@ Worked examples use real rows from the city's table (the fixture on PR #12): Shr
 - *"Thirteen states."* Four of them are not states the person is *in*. "Schedule may be out of date", "holiday list missing" and "side chosen by you" are **qualifiers** that sit on top of another state. "Moved" and "parking not captured" look identical to the phone: a spot was cleared and no new one was saved. The spec keeps all thirteen, with text for each, but builds them as **nine states plus three qualifiers**, and gives "moved" and "not captured" the same widget words on purpose (section 8, states 11 and 12).
 - *"No cleaning in the next 48 h."* This is read as **"no window today or tomorrow, in Pacific calendar days"**. That is what the module's `day` field gives, and what done criterion 1 on #1 asks ("today or tomorrow"). The difference from a rolling 48 h is at most one evening: tomorrow evening's heads-up covers the day after tomorrow anyway.
 - *"The heads-up fires the evening before."* Kept, as one fixed time.
-- *"Urgent alarm close to the window."* Kept for windows from 7am. For the nightly windows that start between midnight and 6am, "close to the window" means an alarm at 1:15am. **This is the one question for the owner** (section 15). Until it is answered, this spec rings those alarms at 10pm the evening before.
+- *"Urgent alarm close to the window."* Kept for windows from 7am. For the nightly windows that start between midnight and 6am, "close to the window" means an alarm at 1:15am. The owner chose to ring those alarms at 10pm the evening before (section 15).
 - *Implied: the widget says "today" and "tomorrow".* **Rejected.** iOS decides when the widget renders, so a widget drawn at 11:50pm saying "tomorrow" is wrong ten minutes later. Every surface names the weekday and the clock time instead. The Lock Screen prints the date directly above the widget, so the weekday is never more than a glance from being decoded. The same goes for notifications, which stay in Notification Center long after delivery. **No surface uses a relative time word: not "today", "tomorrow", "tonight", or "in 20 min".**
 
 ---
@@ -340,7 +340,7 @@ All times are Pacific wall-clock times. Each rule is one sentence that #7 can co
 
 - **T1. Heads-up.** The heads-up for a window is delivered at 7:00pm on the calendar day before the window's date. A window starting between 12am and 6:59am is therefore announced the evening before, 5 to 12 hours ahead (example: a Tuesday 2am window's heads-up is Monday 7:00pm). If capture happens after that 7:00pm and before the window ends, the capture notice is delivered at capture instead.
 - **T2. Daily run.** The daily Time of Day automation runs at 7:00pm every day. It creates the alarm for the next window when that window starts within 24 hours. Because every window in the city's table starts between 12am and 1pm, that means the next calendar day's windows.
-- **T3. Alarm time.** The alarm rings 45 minutes before a window that starts at 7am or later, and at 10:00pm the evening before a window that starts before 7am. *Example:* Friday 8am → Friday 7:15am. Monday 2am → Sunday 10:00pm. The 10pm half is the owner's question in section 15. The other answer is "45 minutes before, always", which gives Sunday 1:15am.
+- **T3. Alarm time.** The alarm rings 45 minutes before a window that starts at 7am or later, and at 10:00pm the evening before a window that starts before 7am. *Example:* Friday 8am → Friday 7:15am. Monday 2am → Sunday 10:00pm. The 10pm half is the owner's answer to section 15 (2026-10-17); "45 minutes before, always" (Sunday 1:15am) was declined.
 - **T4. Alarm label.** The alarm label is "Move car · sweep {start} · {corridor}". When the side is unknown, " (side?)" is appended. When the block is unknown, `{corridor}` becomes "near {corridor}". The label always begins "Move car", which is how the clear finds it.
 - **T5. Alarm at parking time (D7).** When capture finds a next window that starts within 24 hours, it creates the alarm at capture, with the time and label the daily run would have given. *Example:* parked Sunday 10:00pm, after the daily run, on Waller St's south side, for Monday 8am. The alarm "Move car · sweep 8am · Waller St" is created for Monday 7:15am before the person walks away.
 - **T6. Parking inside the alarm's lead.** When the alarm's time has already passed at capture but the window has not ended, capture creates the alarm for the next whole minute plus one (2 minutes after capture, rounded up), with the same label. It rings while the person is still by the car, rather than *Create Alarm* ringing at the original time tomorrow. *Example:* parked Friday 7:30am for 8am → alarm 7:32am. And under T3, parked Sunday 10:30pm for Monday 2am → alarm 10:32pm. D7's own example (parked 10:00pm, after the daily run, for 6am the next morning) lands here under T3: the alarm is created at capture for 10:02pm, so it exists before the person walks away.
@@ -517,14 +517,14 @@ Both are on #7's list in section 16.
 
 ---
 
-## 15. The one question for the owner
+## 15. The owner's answer: alarms for early sweeps ring at 10pm the evening before
 
 **For sweeping that starts before 7am (most of the city's nightly 2–6am sweeping), should the alarm ring at 10pm the evening before, or 45 minutes before the sweep even if that is 1:15am?**
-- *Recommended, and what this spec does until answered:* 10pm the evening before. You move the car before bed and sleep through.
+- **Answered by @chamaya00 on 2026-10-17: 10pm the evening before.** You move the car before bed and sleep through.
 - *The cost:* if you park after 10pm for a night window, the alarm rings two minutes after you park (T6) rather than at 1:15am, so you either re-park then or risk it.
 - *The other answer* changes one sentence (T3) and nothing else in this document.
 
-Asked on #5 with the `agent-factory:needs-input` marker.
+Asked on #5 with the `agent-factory:needs-input` marker, and answered there and on #2 (O15).
 
 ---
 
