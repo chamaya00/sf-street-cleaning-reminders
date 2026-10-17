@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#5 mock: heads-up, alarm, status widget, and "can't tell"</title>
+<!--
+  A DRAWING, NOT AN IMPLEMENTATION. This file lives in docs/design/, nothing
+  imports it, and it never reaches the phone. The phone's surfaces are drawn by
+  iOS; this page only pictures what the spec in 5-lock-screen-reminders.md says
+  they will contain. Inter stands in for SF Pro.
+-->
+<style>
+  :root {
+    --ground: #EDE9E1;   /* sheet only */
+    --ink: #1A1815;
+    --muted: #5C564D;
+    --accent: #A8360B;   /* sheet only: step numerals + one tag */
+    --night: #172031;
+    --night2: #0B1019;
+    --dusk: #4A5A70;
+    --plate: #EDEFF2;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--ground); color: var(--ink);
+    font-family: "Inter", system-ui, sans-serif; font-size: 15px; line-height: 1.45; }
+  .sheet { max-width: 1280px; margin: 0 auto; padding: 28px 46px 80px; }
+
+  /* ---------- masthead ---------- */
+  .mast { display: grid; grid-template-columns: 1.15fr 1fr; gap: 40px; align-items: end; margin-bottom: 26px; }
+  .over { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  h1 { font-family: "Inter Display", "Inter", sans-serif; font-weight: 800; font-size: 58px; line-height: .98;
+       letter-spacing: -.035em; margin: 0; }
+  .dir { font-size: 15px; margin: 0; }
+  .dir b { font-weight: 700; }
+  .not { color: var(--muted); font-size: 13.5px; margin: 8px 0 0; }
+
+  /* ---------- section headings ---------- */
+  h2 { font-family: "Inter Display", "Inter", sans-serif; font-size: 30px; font-weight: 750; letter-spacing: -.02em;
+       margin: 72px 0 6px; }
+  .lede { color: var(--muted); max-width: 760px; margin: 0 0 22px; }
+
+  /* ---------- phones ---------- */
+  .row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .fig { margin: 0; }
+  .z { zoom: .70; }
+  .hero .z { zoom: .70; }
+  .row .phone { height: 580px; }
+  .hero .figcap { max-width: 272px; }
+  .slab .w { zoom: 1.3; }
+  .phone { width: 393px; height: 700px; border-radius: 52px; overflow: hidden; position: relative;
+           background: radial-gradient(120% 80% at 30% 0%, #2A3A55 0%, var(--night) 45%, var(--night2) 100%);
+           color: #fff; --wall: var(--night); }
+  .phone.dusk { background: linear-gradient(180deg, #6B7C93 0%, var(--dusk) 55%, #3A475A 100%); --wall: var(--dusk); }
+  .island { position: absolute; top: 12px; left: 50%; width: 124px; height: 36px; margin-left: -62px; border-radius: 20px; background: #000; }
+  .date { text-align: center; margin-top: 66px; font-size: 19px; font-weight: 600; opacity: .92; }
+  .time { text-align: center; font-family: "Inter Display", "Inter", sans-serif; font-weight: 700; font-size: 96px;
+          line-height: 1; letter-spacing: -.02em; margin-top: 2px; }
+  .wrow { display: flex; justify-content: center; margin-top: 12px; }
+  .figcap { font-size: 13px; margin-top: 8px; color: var(--ink); max-width: 270px; }
+  .figcap b { font-weight: 700; }
+  .figcap .n { color: var(--accent); font-weight: 800; margin-right: 4px; }
+  .figcap span.m { color: var(--muted); }
+
+  /* ---------- the status widget (accessoryRectangular, 172 x 76 pt) ---------- */
+  .w { width: 172px; height: 76px; padding: 3px 2px; display: flex; flex-direction: column; justify-content: center; color: #fff; text-align: left; }
+  .w .h { font-size: 15px; font-weight: 800; line-height: 19px; white-space: nowrap; overflow: hidden; }
+  .w .plate { background: var(--plate); color: var(--wall); border-radius: 6px; padding: 1px 6px; margin: 0 0 3px; display: flex; align-items: center; }
+  .w.quiet .h { font-weight: 400; margin-bottom: 3px; }
+  .w .d { font-size: 13px; font-weight: 600; line-height: 16px; white-space: nowrap; overflow: hidden; }
+  .w .c { font-size: 11px; line-height: 14px; color: #BFC3CA; white-space: nowrap; }
+  .dusk .w .c { color: #D5DAE1; }
+  .q { display: inline-flex; flex: none; width: 15px; height: 15px; border: 1.5px solid currentColor; border-radius: 50%;
+       font-size: 11px; font-weight: 800; justify-content: center; align-items: center; margin-right: 5px; line-height: 1; }
+
+  /* ---------- notifications (dark appearance by default) ---------- */
+  .ntf { position: absolute; left: 10px; right: 10px; border-radius: 24px; padding: 13px 14px 13px 60px;
+         background: rgba(43,44,48,.94); color: #fff; min-height: 72px; }
+  .ntf .ic { position: absolute; left: 12px; top: 14px; width: 38px; height: 38px; border-radius: 9px;
+             background: linear-gradient(160deg, #24324A, #0E1420); border: 1px solid #3B4A63;
+             color: #fff; font: 700 15px/36px "DejaVu Sans Mono", monospace; text-align: center; letter-spacing: -1px; }
+  .ntf .t { font-size: 15px; font-weight: 700; line-height: 19px; padding-right: 40px; }
+  .ntf .b { font-size: 15px; line-height: 19.5px; color: #EBEBF0; margin-top: 1px; }
+  .ntf .when { position: absolute; right: 14px; top: 13px; font-size: 13px; color: #A0A0A8; }
+  .ntf .app { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #A0A0A8; margin-bottom: 2px; }
+  .ntf.light { background: rgba(244,243,241,.97); color: #000; }
+  .ntf.light .b { color: #1C1C1E; }
+  .ntf.light .when, .ntf.light .app { color: #6B6B70; }
+  .acts { position: absolute; left: 10px; right: 10px; border-radius: 18px; overflow: hidden; background: rgba(43,44,48,.94); }
+  .acts div { padding: 13px 16px; font-size: 16px; color: #4BA3FF; border-top: 1px solid rgba(255,255,255,.10); }
+  .acts div:first-child { border-top: 0; }
+  .acts.light { background: rgba(244,243,241,.97); }
+  .acts.light div { color: #0A64D6; border-top-color: rgba(0,0,0,.08); }
+  .blurred { filter: blur(7px) brightness(.6); }
+
+  /* ---------- alarm (drawn by iOS) ---------- */
+  .alarm { background: radial-gradient(120% 80% at 50% 10%, #1D2433, #10141C 70%); }
+  .alarm .lbl { text-align: center; margin: 120px 24px 0; font-size: 26px; font-weight: 700; line-height: 1.15; letter-spacing: -.01em; }
+  .alarm .sub { text-align: center; font-size: 15px; color: #BFC3CA; margin-top: 6px; }
+  .alarm .big { text-align: center; font-family: "Inter Display", "Inter", sans-serif; font-size: 104px; font-weight: 700; letter-spacing: -.02em; margin-top: 18px; line-height: 1; }
+  .alarm .btns { position: absolute; left: 24px; right: 24px; bottom: 70px; display: grid; gap: 14px; }
+  .alarm .btns div { height: 62px; border-radius: 31px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; }
+  .alarm .snz { background: #3A3F49; color: #fff; }
+  .alarm .stp { background: #fff; color: #000; }
+
+  /* ---------- spot sheet (system alert, drawn by iOS) ---------- */
+  .alert { position: absolute; left: 50%; top: 150px; width: 290px; margin-left: -145px; border-radius: 20px; overflow: hidden;
+           background: rgba(43,44,48,.97); color: #fff; text-align: center; }
+  .alert .at { font-size: 17px; font-weight: 700; padding: 18px 16px 4px; }
+  .alert .am { font-size: 13px; line-height: 17px; padding: 0 16px 16px; color: #EBEBF0; }
+  .alert .ab { border-top: 1px solid rgba(255,255,255,.12); padding: 11px; font-size: 17px; color: #4BA3FF; }
+  .alert .ab.pref { font-weight: 700; }
+
+  /* ---------- glance test ---------- */
+  .slabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .slab { border-radius: 16px; padding: 14px 10px 10px; background: var(--night); --wall: var(--night); }
+  .slab.dusk { background: var(--dusk); --wall: var(--dusk); }
+  .slab .w { margin: 0 auto; }
+  .slab p { margin: 8px 2px 0; font-size: 11.5px; color: #BFC3CA; line-height: 1.3; }
+  .slab.dusk p { color: #D5DAE1; }
+  .slab p b { color: #fff; font-weight: 700; }
+  .blurrow .w { filter: blur(2.4px); }
+
+  /* ---------- directions ---------- */
+  .dirs { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .dcol { background: #E3DED4; border-radius: 18px; padding: 18px 18px 16px; }
+  .dcol.rec { background: #DDD6C9; }
+  .dcol h3 { margin: 0 0 2px; font-size: 18px; letter-spacing: -.01em; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #fff;
+         background: var(--accent); border-radius: 4px; padding: 2px 6px; margin-left: 8px; vertical-align: 2px; }
+  .dcol .why { font-size: 13.5px; color: var(--muted); margin: 0 0 12px; }
+  .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .trio .slab p { font-size: 11px; }
+  .trio .slab { padding: 12px 6px 8px; }
+  .trio .slab .w { zoom: .92; }
+  .card .slab .w { zoom: 1.2; }
+  .wa .v { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #BFC3CA; }
+  .wa .big { font-family: "Inter Display", "Inter", sans-serif; font-size: 27px; font-weight: 800; line-height: 30px; letter-spacing: -.01em; }
+  .wa .d { font-size: 11px; color: #BFC3CA; font-weight: 500; }
+
+  /* ---------- happy path ---------- */
+  .path { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; border-top: 3px solid var(--ink); }
+  .step { padding: 14px 16px 0 0; }
+  .step .sn { font-family: "Inter Display", "Inter", sans-serif; font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1; letter-spacing: -.03em; }
+  .step h4 { margin: 6px 0 2px; font-size: 16px; }
+  .step .tm { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .step .say { font-size: 13.5px; }
+  .step .tap { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-top: 8px; }
+
+  /* ---------- state cards ---------- */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: #E3DED4; border-radius: 18px; padding: 14px; }
+  .card h3 { margin: 0 0 10px; font-size: 15.5px; letter-spacing: -.005em; }
+  .card h3 small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
+  .card .slab { margin-bottom: 10px; }
+  .card dl { margin: 0; font-size: 12.5px; line-height: 1.4; }
+  .card dt { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: 7px; }
+  .card dd { margin: 1px 0 0; }
+  .card dd.none { color: var(--muted); }
+  .card .lab { font-family: "DejaVu Sans Mono", monospace; font-size: 11.5px; background: #10141C; color: #fff; border-radius: 6px; padding: 3px 6px; display: inline-block; }
+
+  /* ---------- side choice ---------- */
+  .notes { font-size: 13px; color: var(--muted); max-width: 900px; }
+
+  footer { margin-top: 60px; font-size: 12.5px; color: var(--muted); }
+
+  /* ---------- narrow ---------- */
+  @media (max-width: 700px) {
+    .sheet { padding: 18px 14px 60px; width: 375px; max-width: 375px; margin: 0; }
+    .mast { grid-template-columns: 1fr; gap: 10px; margin-bottom: 14px; }
+    h1 { font-size: 32px; }
+    .dir { font-size: 12px; line-height: 1.35; }
+    .not { font-size: 11px; line-height: 1.35; margin-top: 4px; }
+    .over { font-size: 10px; margin-bottom: 4px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 10px; }
+    .row .z { zoom: .38; }
+    .row .figcap { font-size: 10.5px; margin-top: 4px; line-height: 1.25; }
+    .hero .figcap .m { display: none; }
+    h2 { font-size: 24px; margin-top: 48px; }
+    .slabs { grid-template-columns: 1fr; }
+    .slab .w { zoom: 1.45; }
+    .trio .slab .w { zoom: 1.3; }
+    .card .slab .w { zoom: 1.3; }
+    .dirs { grid-template-columns: 1fr; }
+    .trio { grid-template-columns: 1fr; }
+    .path { grid-template-columns: 1fr; border-top: 0; }
+    .step { border-top: 3px solid var(--ink); padding-bottom: 12px; }
+    .cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header class="mast">
+  <div>
+    <p class="over">Issue #5 · design mock · a drawing, never shipped</p>
+    <h1>Loud only when it matters.</h1>
+  </div>
+  <div>
+    <p class="dir"><b>Blunt, nocturnal, quiet when there is nothing to do.</b> Every surface leads with a verdict. Every state that needs you sits on a solid plate; the one state that doesn't is the quietest thing on the screen.</p>
+    <p class="not">Not this: green ticks and pastel status chips, a parking map, emoji, "Heads up!" before the what. No colour carries meaning: the Lock Screen widget has none.</p>
+  </div>
+</header>
+
+<!-- ===================== HERO: the four surfaces ===================== -->
+<section class="hero row" aria-label="The four surfaces">
+
+  <figure class="fig">
+    <div class="z"><div class="phone">
+      <div class="island"></div>
+      <div class="date">Wednesday, October 21</div>
+      <div class="time">6:41</div>
+      <div class="wrow"><div class="w quiet">
+        <div class="h">✓ All clear till Fri</div>
+        <div class="d">Shrader St · east side</div>
+        <div class="c">Checked 6:41pm</div>
+      </div></div>
+      <div class="ntf" style="top:316px">
+        <div class="ic">{ }</div>
+        <div class="when">now</div>
+        <div class="t">Parked · Shrader St, east side</div>
+        <div class="b">All clear till Fri. Next sweep Fri Oct 23, 8–10am; heads-up Thu at 7pm.</div>
+      </div>
+    </div></div>
+    <figcaption class="figcap"><span class="n">1</span><b>Status widget</b>, nothing soon <span class="m">· Wed 6:41pm, just parked; capture notice below it, from Scriptable</span></figcaption>
+  </figure>
+
+  <figure class="fig">
+    <div class="z"><div class="phone">
+      <div class="island"></div>
+      <div class="date">Thursday, October 22</div>
+      <div class="time">7:00</div>
+      <div class="wrow"><div class="w">
+        <div class="h plate">Sweep Fri 8am</div>
+        <div class="d">Shrader St · east side</div>
+        <div class="c">Checked 6:58pm</div>
+      </div></div>
+      <div class="ntf" style="top:316px">
+        <div class="ic">{ }</div>
+        <div class="when">now</div>
+        <div class="t">Street sweeping Fri 8–10am</div>
+        <div class="b">Shrader St, east side (Waller–Beulah). Move your car before 8am. Alarm at 7:15am.</div>
+      </div>
+    </div></div>
+    <figcaption class="figcap"><span class="n">2</span><b>Heads-up</b>, from Scriptable <span class="m">· Thu 7:00pm, the evening before</span></figcaption>
+  </figure>
+
+  <figure class="fig">
+    <div class="z"><div class="phone alarm">
+      <div class="island"></div>
+      <div class="lbl">Move car · sweep 8am · Shrader St</div>
+      <div class="sub">Alarm</div>
+      <div class="big">7:15</div>
+      <div class="btns"><div class="snz">Snooze</div><div class="stp">Stop</div></div>
+    </div></div>
+    <figcaption class="figcap"><span class="n">3</span><b>Clock alarm</b>, its label is the only text <span class="m">· Fri 7:15am, through Do Not Disturb</span></figcaption>
+  </figure>
+
+  <figure class="fig">
+    <div class="z"><div class="phone">
+      <div class="blurred">
+        <div class="island"></div>
+        <div class="date">Tuesday, October 20</div>
+        <div class="time">7:31</div>
+        <div class="wrow"><div class="w">
+          <div class="h plate"><span class="q">?</span>Which side?</div>
+          <div class="d">Earliest sweep Wed 8am</div>
+          <div class="c">Checked 7:31pm</div>
+        </div></div>
+      </div>
+      <div class="ntf" style="top:150px">
+        <div class="ic">{ }</div>
+        <div class="app">Scriptable</div>
+        <div class="when">now</div>
+        <div class="t">Which side of Shrader St?</div>
+        <div class="b">GPS couldn't tell. Until you pick, reminders follow the earlier sweep: west side Wed 8–10am. East side: Fri 8–10am. Alarm at 7:15am. Hold to pick.</div>
+      </div>
+      <div class="acts" style="top:330px">
+        <div>West side · Shrader St (Waller–Beulah)</div>
+        <div>East side · Shrader St (Waller–Beulah)</div>
+      </div>
+    </div></div>
+    <figcaption class="figcap"><span class="n">4</span><b>Which side?</b> expanded: two side buttons <span class="m">· Tue 7:31pm, press and hold = tap 1</span></figcaption>
+  </figure>
+
+</section>
+
+<!-- ===================== GLANCE TEST ===================== -->
+<h2>Glance test: the widget in every state</h2>
+<p class="lede">Lock Screen widgets are desaturated by iOS, so these are the only signals: a solid plate (needs you), a "?" (the phone isn't sure), a "✓" with no plate (nothing to do). Only states 1 and 2 have no plate (13 is state 1 again, a week on).</p>
+
+<div class="slabs">
+  <div class="slab"><div class="w quiet"><div class="h">✓ All clear till Fri</div><div class="d">Shrader St · east side</div><div class="c">Checked 6:41pm</div></div><p><b>1 Nothing soon</b></p></div>
+  <div class="slab"><div class="w quiet"><div class="h">✓ All clear till Fri</div><div class="d">East side · your pick</div><div class="c">Checked 7:52pm</div></div><p><b>2 Nothing soon, your pick</b></p></div>
+  <div class="slab"><div class="w"><div class="h plate">Sweep Fri 8am</div><div class="d">Shrader St · east side</div><div class="c">Checked 9:41pm</div></div><p><b>3 Sweep coming</b> (tomorrow)</p></div>
+  <div class="slab"><div class="w"><div class="h plate">Move by 8am</div><div class="d">Shrader St · east side</div><div class="c">Checked 6:50am</div></div><p><b>4 Move today</b></p></div>
+  <div class="slab"><div class="w"><div class="h plate">Sweeping until 10am</div><div class="d">Shrader St · east side</div><div class="c">Checked 8:05am</div></div><p><b>4 Move today</b>, under way</p></div>
+  <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Which side?</div><div class="d">Earliest sweep Wed 8am</div><div class="c">Checked 7:31pm</div></div><p><b>5 Which side?</b></p></div>
+  <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Which block?</div><div class="d">Earliest sweep Mon 8am</div><div class="c">Checked 8:02pm</div></div><p><b>6 Which block?</b></p></div>
+  <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Spot unknown</div><div class="d">No reminders set</div><div class="c">Checked 6:12pm</div></div><p><b>7 Spot unknown</b></p></div>
+  <div class="slab"><div class="w"><div class="h plate">No schedule here</div><div class="d">No reminders set</div><div class="c">Checked 6:12pm</div></div><p><b>8 No schedule here</b></p></div>
+  <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Old schedule</div><div class="d">From Sep 30 · Fri 8am</div><div class="c">Checked 6:41pm</div></div><p><b>9 Old schedule</b>, instead of 1</p></div>
+  <div class="slab"><div class="w"><div class="h plate">Sweep Fri 8am</div><div class="d">Old data: Sep 30</div><div class="c">Checked 9:41pm</div></div><p><b>9 Old schedule</b> on 3</p></div>
+  <div class="slab"><div class="w"><div class="h plate">Sweep Fri 8am</div><div class="d">No 2027 holiday list</div><div class="c">Checked 9:41pm</div></div><p><b>10 No holiday list</b> on 3 (Jan 1)</p></div>
+  <div class="slab"><div class="w"><div class="h plate">No spot saved</div><div class="d">Drove off 7:40am</div><div class="c">Checked 7:42am</div></div><p><b>11 / 12</b> Not captured, or moved</p></div>
+  <div class="slab"><div class="w quiet"><div class="h">✓ All clear till Oct 30</div><div class="d">Shrader St · east side</div><div class="c">Checked 10:03am</div></div><p><b>13 Window passed</b> → state 1</p></div>
+  <div class="slab dusk"><div class="w"><div class="h plate"><span class="q">?</span>Which side?</div><div class="d">Earliest sweep Wed 8am</div><div class="c">Checked 7:31pm</div></div><p><b>5</b> on a lighter wallpaper</p></div>
+</div>
+
+<p class="lede" style="margin-top:22px">The same four, blurred: what survives a glance without reading. The bright bar always means "look"; only the nothing-soon slab is empty.</p>
+<div class="slabs blurrow">
+  <div class="slab"><div class="w quiet"><div class="h">✓ All clear till Fri</div><div class="d">Shrader St · east side</div><div class="c">Checked 6:41pm</div></div><p><b>1 Nothing soon</b></p></div>
+  <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Which side?</div><div class="d">Earliest sweep Wed 8am</div><div class="c">Checked 7:31pm</div></div><p><b>5 Which side?</b></p></div>
+  <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Old schedule</div><div class="d">From Sep 30 · Fri 8am</div><div class="c">Checked 6:41pm</div></div><p><b>9 Old schedule</b></p></div>
+  <div class="slab"><div class="w"><div class="h plate">Sweep Fri 8am</div><div class="d">Shrader St · east side</div><div class="c">Checked 9:41pm</div></div><p><b>3 Sweep coming</b></p></div>
+</div>
+
+<!-- ===================== TWO DIRECTIONS ===================== -->
+<h2>Two directions</h2>
+<p class="lede">They differ in what leads, not in colour. Same three states in each: nothing soon, which side, spot unknown.</p>
+<div class="dirs">
+  <div class="dcol">
+    <h3>A · Departure board: time first</h3>
+    <p class="why">A glance gives you <i>when</i>. But in "Which side?" the biggest thing on the widget is a guess stated as fact, in "nothing soon" the big time reads as urgency, and "Spot unknown" has no time, so its shape collapses.</p>
+    <div class="trio">
+      <div class="slab"><div class="w wa"><div class="v">Next sweep</div><div class="big">FRI 8AM</div><div class="d">Shrader St · checked 6:41pm</div></div><p><b>Nothing soon</b>: looks urgent</p></div>
+      <div class="slab"><div class="w wa"><div class="v">Next sweep · side?</div><div class="big">WED 8AM</div><div class="d">Shrader St · checked 7:31pm</div></div><p><b>Which side?</b>: same shape as above</p></div>
+      <div class="slab"><div class="w wa"><div class="v">Spot unknown</div><div class="big">—</div><div class="d">checked 6:12pm</div></div><p><b>Spot unknown</b>: an empty slot</p></div>
+    </div>
+  </div>
+  <div class="dcol rec">
+    <h3>B · Verdict first, quiet all-good <span class="tag">recommended</span></h3>
+    <p class="why">A closed set of headlines; a plate on every state that needs you; the all-good state alone has no plate. The difference survives desaturation, Always-On dimming and a blur.</p>
+    <div class="trio">
+      <div class="slab"><div class="w quiet"><div class="h">✓ All clear till Fri</div><div class="d">Shrader St · east side</div><div class="c">Checked 6:41pm</div></div><p><b>Nothing soon</b>: the quietest</p></div>
+      <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Which side?</div><div class="d">Earliest sweep Wed 8am</div><div class="c">Checked 7:31pm</div></div><p><b>Which side?</b>: plate + "?"</p></div>
+      <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Spot unknown</div><div class="d">No reminders set</div><div class="c">Checked 6:12pm</div></div><p><b>Spot unknown</b>: same shape, other words</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== HAPPY PATH ===================== -->
+<h2>The happy path</h2>
+<p class="lede">Shrader St, east side, parked Wednesday 6:40pm. The window is Friday 8–10am. Criterion 1 on #1, "without opening anything", is met at step 2.</p>
+<div class="path">
+  <div class="step"><div class="sn">1</div><h4>Parking captured</h4><div class="tm">Wed 6:40pm · car disconnects</div><div class="say">Capture notice: "Parked · Shrader St, east side". No alarm: the window is over 24 h away.</div><div class="tap">0 taps</div></div>
+  <div class="step"><div class="sn">2</div><h4>Status known</h4><div class="tm">every wake · status widget</div><div class="say">No plate, "✓ All clear till Fri". Thursday evening: plate, "Sweep Fri 8am".</div><div class="tap">0 taps</div></div>
+  <div class="step"><div class="sn">3</div><h4>Heads-up</h4><div class="tm">Thu 7:00pm · Scriptable notification</div><div class="say">"Street sweeping Fri 8–10am". The daily run creates the alarm at the same minute.</div><div class="tap">0 taps to read</div></div>
+  <div class="step"><div class="sn">4</div><h4>Urgent alarm</h4><div class="tm">Fri 7:15am · Clock alarm</div><div class="say">"Move car · sweep 8am · Shrader St", through Do Not Disturb and silent mode.</div><div class="tap">1 tap (Stop)</div></div>
+  <div class="step"><div class="sn">5</div><h4>Cleared</h4><div class="tm">car reconnects, or 10:00am passes</div><div class="say">Moved: notifications removed, "Move car" alarms off, "No spot saved". Window over: the heads-up is removed, the widget moves on to Oct 30.</div><div class="tap">0 taps</div></div>
+</div>
+
+<!-- ===================== EVERY STATE ===================== -->
+<h2>Every state, every surface</h2>
+<p class="lede">The exact words, as the spec has them. "—" means nothing appears on that surface, on purpose. Alarm labels are set in mono to show they are the whole of the alarm's text.</p>
+<div class="cards">
+
+  <div class="card"><h3>1 · Nothing soon<small>side known, nothing today or tomorrow</small></h3>
+    <div class="slab"><div class="w quiet"><div class="h">✓ All clear till Fri</div><div class="d">Shrader St · east side</div><div class="c">Checked 6:41pm</div></div></div>
+    <dl><dt>Capture notice</dt><dd><b>Parked · Shrader St, east side</b><br>All clear till Fri. Next sweep Fri Oct 23, 8–10am; heads-up Thu at 7pm.</dd>
+    <dt>Heads-up</dt><dd class="none">—</dd><dt>Alarm label</dt><dd class="none">—</dd></dl></div>
+
+  <div class="card"><h3>2 · Nothing soon, your pick<small>side chosen by you</small></h3>
+    <div class="slab"><div class="w quiet"><div class="h">✓ All clear till Fri</div><div class="d">East side · your pick</div><div class="c">Checked 7:52pm</div></div></div>
+    <dl><dt>Spot sheet, after the tap</dt><dd><b>East side saved</b><br>Shrader St, east side (Waller–Beulah). Next sweep there Fri Oct 23, 8–10am. All clear till then.</dd>
+    <dt>Heads-up</dt><dd class="none">—</dd><dt>Alarm label</dt><dd class="none">—</dd></dl></div>
+
+  <div class="card"><h3>3 · Sweep coming<small>cleaning tomorrow</small></h3>
+    <div class="slab"><div class="w"><div class="h plate">Sweep Fri 8am</div><div class="d">Shrader St · east side</div><div class="c">Checked 9:41pm</div></div></div>
+    <dl><dt>Heads-up · Thu 7:00pm</dt><dd><b>Street sweeping Fri 8–10am</b><br>Shrader St, east side (Waller–Beulah). Move your car before 8am. Alarm at 7:15am.</dd>
+    <dt>Capture notice</dt><dd>Same words, if parked after 7pm Thursday.</dd>
+    <dt>Alarm label · Fri 7:15am</dt><dd><span class="lab">Move car · sweep 8am · Shrader St</span></dd></dl></div>
+
+  <div class="card"><h3>4 · Move today<small>cleaning today, window imminent</small></h3>
+    <div class="slab"><div class="w"><div class="h plate">Move by 8am</div><div class="d">Shrader St · east side</div><div class="c">Checked 6:50am</div></div></div>
+    <dl><dt>Capture notice · parked Fri 7:30am</dt><dd><b>Street sweeping Fri 8–10am</b><br>Shrader St, east side. Move your car before 8am. Alarm rings at 7:32am.</dd>
+    <dt>Under way</dt><dd><b>Sweeping now, until 10am</b><br>Shrader St, east side. Tickets are issued during sweeping. Alarm rings at 8:07am.</dd>
+    <dt>Alarm label</dt><dd><span class="lab">Move car · sweep 8am · Shrader St</span></dd></dl></div>
+
+  <div class="card"><h3>5 · Which side?<small>can't tell which side</small></h3>
+    <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Which side?</div><div class="d">Earliest sweep Wed 8am</div><div class="c">Checked 7:31pm</div></div></div>
+    <dl><dt>Capture notice · with side buttons</dt><dd><b>Which side of Shrader St?</b><br>GPS couldn't tell. Until you pick, reminders follow the earlier sweep: west side Wed 8–10am. East side: Fri 8–10am. Alarm at 7:15am. Hold to pick.</dd>
+    <dt>Heads-up · with side buttons</dt><dd><b>Street sweeping Wed 8am — which side?</b><br>Shrader St (Waller–Beulah): west side Wed 8–10am, east side Fri 8–10am. Reminding for west until you pick. Alarm at 7:15am.</dd>
+    <dt>Alarm label</dt><dd><span class="lab">Move car · sweep 8am · Shrader St (side?)</span></dd></dl></div>
+
+  <div class="card"><h3>6 · Which block?<small>can't tell which block</small></h3>
+    <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Which block?</div><div class="d">Earliest sweep Mon 8am</div><div class="c">Checked 8:02pm</div></div></div>
+    <dl><dt>Capture notice · no buttons</dt><dd><b>Which block? Near Shrader &amp; Waller</b><br>GPS put you near 4 blocks. Reminders follow the earliest: Waller St, south side (Cole–Shrader), Mon 8–10am.</dd>
+    <dt>Heads-up</dt><dd><b>Street sweeping Mon 8am — which block?</b><br>Near Shrader St &amp; Waller St. Earliest of 4 nearby blocks: Waller St, south side, Mon 8–10am. Move before 8am to be sure. Alarm at 7:15am.</dd>
+    <dt>Alarm label</dt><dd><span class="lab">Move car · sweep 8am · near Waller St</span></dd></dl></div>
+
+  <div class="card"><h3>7 · Spot unknown<small>can't tell where you parked</small></h3>
+    <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Spot unknown</div><div class="d">No reminders set</div><div class="c">Checked 6:12pm</div></div></div>
+    <dl><dt>Capture notice · tap retries the fix</dt><dd><b>Couldn't tell where you parked</b><br>The phone gave no usable location, so no sweeping reminders are set. Tap here while you're by the car to try again, or check the signs.</dd>
+    <dt>Heads-up</dt><dd class="none">—</dd><dt>Alarm label</dt><dd class="none">—</dd></dl></div>
+
+  <div class="card"><h3>8 · No schedule here<small>no record for this location</small></h3>
+    <div class="slab"><div class="w"><div class="h plate">No schedule here</div><div class="d">No reminders set</div><div class="c">Checked 6:12pm</div></div></div>
+    <dl><dt>Capture notice</dt><dd><b>No sweeping schedule for this spot</b><br>The city's list has nothing for Shrader St, west side (Waller–Beulah). That doesn't mean it's never swept. Check the signs. No reminders set.</dd>
+    <dt>Heads-up</dt><dd class="none">—</dd><dt>Alarm label</dt><dd class="none">—</dd></dl></div>
+
+  <div class="card"><h3>9 · Old schedule<small>qualifier: last download over 14 days ago</small></h3>
+    <div class="slab"><div class="w"><div class="h plate"><span class="q">?</span>Old schedule</div><div class="d">From Sep 30 · Fri 8am</div><div class="c">Checked 6:41pm</div></div></div>
+    <dl><dt>Capture notice, where 1 would apply</dt><dd><b>Parked · Shrader St, east side</b><br>Next sweep Fri Oct 23, 8–10am, by a schedule last downloaded Sep 30 that may be out of date. Check the signs.</dd>
+    <dt>Any other notification</dt><dd>…ends: "Schedule last downloaded Sep 30, so it may be out of date."</dd>
+    <dt>Alarm label</dt><dd>Unchanged. A stale schedule still arms alarms.</dd></dl></div>
+
+  <div class="card"><h3>10 · No holiday list<small>qualifier: only when the window is in that year</small></h3>
+    <div class="slab"><div class="w"><div class="h plate">Sweep Fri 8am</div><div class="d">No 2027 holiday list</div><div class="c">Checked 9:41pm</div></div></div>
+    <dl><dt>Notifications</dt><dd>…end: "No 2027 holiday list yet, so holidays count as sweeping days."</dd>
+    <dt>Alarm label</dt><dd>Unchanged.</dd></dl></div>
+
+  <div class="card"><h3>11 · No spot saved<small>parking not captured</small></h3>
+    <div class="slab"><div class="w"><div class="h plate">No spot saved</div><div class="d">Drove off 5:42pm</div><div class="c">Checked 9:12pm</div></div></div>
+    <dl><dt>Not-captured notice · daily run, 7:00pm</dt><dd><b>No parked spot saved</b><br>Nothing was saved since you drove off at 5:42pm. If your car is on the street, no reminders are set for it.</dd>
+    <dt>Heads-up</dt><dd class="none">—</dd><dt>Alarm label</dt><dd class="none">—</dd></dl></div>
+
+  <div class="card"><h3>12 · Moved<small>the car reconnected</small></h3>
+    <div class="slab"><div class="w"><div class="h plate">No spot saved</div><div class="d">Drove off 7:40am</div><div class="c">Checked 7:42am</div></div></div>
+    <dl><dt>What happens</dt><dd>Pending and delivered notifications are removed; every alarm whose label begins "Move car" is turned off. Same widget words as 11, on purpose: the phone can't tell them apart.</dd>
+    <dt>Notifications</dt><dd class="none">—</dd></dl></div>
+
+  <div class="card"><h3>13 · Window passed<small>10:00am Friday, car still there</small></h3>
+    <div class="slab"><div class="w quiet"><div class="h">✓ All clear till Oct 30</div><div class="d">Shrader St · east side</div><div class="c">Checked 10:03am</div></div></div>
+    <dl><dt>What happens</dt><dd>The window's heads-up and capture notice are removed at the next script run. The widget recomputes from the next window (here, state 1). A "Which side?" spot stays in state 5, naming the other side's window.</dd>
+    <dt>Notifications</dt><dd class="none">—</dd></dl></div>
+</div>
+
+<!-- ===================== SIDE CHOICE ===================== -->
+<h2>The side choice</h2>
+<p class="lede">Two taps: press and hold, then a side. Scriptable comes forward with a system alert, the spot sheet. If nobody taps, the earlier side's reminder stands unchanged.</p>
+<section class="row" aria-label="Side choice flow">
+  <figure class="fig">
+    <div class="z"><div class="phone">
+      <div class="island"></div>
+      <div class="date">Tuesday, October 20</div>
+      <div class="time">7:31</div>
+      <div class="wrow"><div class="w">
+        <div class="h plate"><span class="q">?</span>Which side?</div>
+        <div class="d">Earliest sweep Wed 8am</div>
+        <div class="c">Checked 7:31pm</div>
+      </div></div>
+      <div class="ntf" style="top:316px">
+        <div class="ic">{ }</div>
+        <div class="when">now</div>
+        <div class="t">Which side of Shrader St?</div>
+        <div class="b">GPS couldn't tell. Until you pick, reminders follow the earlier sweep: west side Wed 8–10am. East side: Fri 8–10am. Alarm at 7:15am. Hold to pick.</div>
+      </div>
+    </div></div>
+    <figcaption class="figcap"><b>a · Collapsed.</b> <span class="m">Press and hold: tap 1.</span></figcaption>
+  </figure>
+  <figure class="fig">
+    <div class="z"><div class="phone">
+      <div class="blurred"><div class="island"></div><div class="date">Tuesday, October 20</div><div class="time">7:31</div></div>
+      <div class="ntf" style="top:150px">
+        <div class="ic">{ }</div>
+        <div class="app">Scriptable</div>
+        <div class="when">now</div>
+        <div class="t">Which side of Shrader St?</div>
+        <div class="b">GPS couldn't tell. Until you pick, reminders follow the earlier sweep: west side Wed 8–10am. East side: Fri 8–10am. Alarm at 7:15am. Hold to pick.</div>
+      </div>
+      <div class="acts" style="top:330px">
+        <div>West side · Shrader St (Waller–Beulah)</div>
+        <div>East side · Shrader St (Waller–Beulah)</div>
+      </div>
+    </div></div>
+    <figcaption class="figcap"><b>b · Expanded.</b> <span class="m">Tap a side: tap 2. Scriptable opens.</span></figcaption>
+  </figure>
+  <figure class="fig">
+    <div class="z"><div class="phone" style="background:#05070B">
+      <div class="island"></div>
+      <div class="alert">
+        <div class="at">East side saved</div>
+        <div class="am">Shrader St, east side (Waller–Beulah). Next sweep there Fri Oct 23, 8–10am. All clear till then.</div>
+        <div class="ab pref">Done</div>
+        <div class="ab">Switch to west side</div>
+        <div class="ab">Undo — I'm not sure</div>
+      </div>
+    </div></div>
+    <figcaption class="figcap"><b>c · Spot sheet</b> in Scriptable. <span class="m">Done is optional: the choice is already saved.</span></figcaption>
+  </figure>
+  <figure class="fig">
+    <div class="z"><div class="phone">
+      <div class="island"></div>
+      <div class="date">Tuesday, October 20</div>
+      <div class="time">7:33</div>
+      <div class="wrow"><div class="w quiet">
+        <div class="h">✓ All clear till Fri</div>
+        <div class="d">East side · your pick</div>
+        <div class="c">Checked 7:33pm</div>
+      </div></div>
+    </div></div>
+    <figcaption class="figcap"><b>d · After.</b> <span class="m">The 7:15am Wed alarm stays (rule T7). Tap the widget to change or undo.</span></figcaption>
+  </figure>
+</section>
+<p class="notes" style="margin-top:16px"><b>When the city gives no side name</b> (blockside is null on 255 whole blocks), the side is worked out from the block's centreline. That agrees with the city's own names on 99.98% of rows. The buttons then read <i>"South-east side (from map) · Berry St"</i> and <i>"North-west side (from map) · Berry St"</i>. If the map and the city disagree, there are no buttons and the earlier reminder stands.</p>
+
+<!-- ===================== APPEARANCES ===================== -->
+<h2>Light and dark appearance</h2>
+<p class="lede">The notification plate belongs to iOS and follows the phone's appearance. The words carry the difference between the heads-up and the can't-tell state in both.</p>
+<section class="row" aria-label="Appearances">
+  <figure class="fig">
+    <div class="z"><div class="phone dusk" style="height:420px">
+      <div class="island"></div>
+      <div class="date">Thursday, October 22</div><div class="time">7:00</div>
+      <div class="ntf light" style="top:226px">
+        <div class="ic">{ }</div><div class="when">now</div>
+        <div class="t">Street sweeping Fri 8–10am</div>
+        <div class="b">Shrader St, east side (Waller–Beulah). Move your car before 8am. Alarm at 7:15am.</div>
+      </div>
+    </div></div>
+    <figcaption class="figcap"><b>Heads-up, light</b></figcaption>
+  </figure>
+  <figure class="fig">
+    <div class="z"><div class="phone" style="height:420px">
+      <div class="island"></div>
+      <div class="date">Thursday, October 22</div><div class="time">7:00</div>
+      <div class="ntf" style="top:226px">
+        <div class="ic">{ }</div><div class="when">now</div>
+        <div class="t">Street sweeping Fri 8–10am</div>
+        <div class="b">Shrader St, east side (Waller–Beulah). Move your car before 8am. Alarm at 7:15am.</div>
+      </div>
+    </div></div>
+    <figcaption class="figcap"><b>Heads-up, dark</b></figcaption>
+  </figure>
+  <figure class="fig">
+    <div class="z"><div class="phone dusk" style="height:520px">
+      <div class="blurred"><div class="island"></div><div class="date">Tuesday, October 20</div><div class="time">7:31</div></div>
+      <div class="ntf light" style="top:110px">
+        <div class="ic">{ }</div><div class="app">Scriptable</div><div class="when">now</div>
+        <div class="t">Which side of Shrader St?</div>
+        <div class="b">GPS couldn't tell. Until you pick, reminders follow the earlier sweep: west side Wed 8–10am. East side: Fri 8–10am. Alarm at 7:15am. Hold to pick.</div>
+      </div>
+      <div class="acts light" style="top:290px">
+        <div>West side · Shrader St (Waller–Beulah)</div>
+        <div>East side · Shrader St (Waller–Beulah)</div>
+      </div>
+    </div></div>
+    <figcaption class="figcap"><b>Which side?, light</b></figcaption>
+  </figure>
+  <figure class="fig">
+    <div class="z"><div class="phone" style="height:520px">
+      <div class="blurred"><div class="island"></div><div class="date">Tuesday, October 20</div><div class="time">7:31</div></div>
+      <div class="ntf" style="top:110px">
+        <div class="ic">{ }</div><div class="app">Scriptable</div><div class="when">now</div>
+        <div class="t">Which side of Shrader St?</div>
+        <div class="b">GPS couldn't tell. Until you pick, reminders follow the earlier sweep: west side Wed 8–10am. East side: Fri 8–10am. Alarm at 7:15am. Hold to pick.</div>
+      </div>
+      <div class="acts" style="top:290px">
+        <div>West side · Shrader St (Waller–Beulah)</div>
+        <div>East side · Shrader St (Waller–Beulah)</div>
+      </div>
+    </div></div>
+    <figcaption class="figcap"><b>Which side?, dark</b></figcaption>
+  </figure>
+</section>
+
+<footer>Drawing for issue #5. Phone chrome approximates iOS 26; Inter stands in for SF Pro; the "{ }" square stands in for Scriptable's icon. Spec: docs/design/5-lock-screen-reminders.md.</footer>
+</div>
+</body>
+</html>
