@@ -11,3 +11,4 @@ Delete any lesson that has graduated into a test, a lint rule, or a type.
 -->
 Keep test helpers in `tools/`, never under `test/`: `node --test` runs every .js file in a directory named test, so a helper there runs as a test file.
 Run the suite under `/opt/node20/bin/node` as well as the default Node: the gate's `commands` path installs nothing, so CI gets whatever Node `ubuntu-latest` ships, and only the floor of 20 is promised.
+Put a `Privilege change:` line, starting the line, in the draft pull request body from the first push that adds `permissions:`, `uses:` or `secrets.` text in any non-Markdown file, tests included: project-guard reads the whole diff, not only workflows, and goes red without it.
