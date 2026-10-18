@@ -176,8 +176,11 @@ function sweepsOn(r, weekday, week, holiday) {
 
 // ------------------------------------------------------------------------ API
 
-function unknown(base, reason) {
+// Stable codes for an unknown result, so a caller maps states by code rather
+// than by matching `reason`, whose wording is for people.
+function unknown(base, code, reason) {
   base.status = 'unknown';
+  base.code = code;
   base.reason = reason;
   base.windows = null;
   return base;
@@ -189,9 +192,11 @@ function unknown(base, reason) {
 //        is when they were fetched (an ISO string, a Date or milliseconds).
 // query: { cnn, side ('L' or 'R'), now, until (optional, default now + 14 days) }
 //
-// Returns { status, cnn, side, stale, fetchedAt, notes, windows, reason }:
+// Returns { status, cnn, side, stale, fetchedAt, notes, windows, code, reason }:
 // - status 'unknown': no row for that CNN and side, a row that cannot be read,
 //   or no data. `windows` is null, never an empty list, and `reason` says why.
+//   `code` is 'no-rows', 'bad-row', 'no-data', or 'bad-query' for a bad `now`,
+//   `until` or side; it is null on every other result.
 // - status 'stale': fetchedAt is missing or more than 14 days before `now`.
 //   Every window carries stale: true and the fetchedAt.
 // - status 'ok': windows is the complete list, possibly empty.
@@ -217,23 +222,24 @@ function windowsForSide(data, query) {
     fetchedAt: fetchedAt,
     notes: [],
     windows: [],
+    code: null,
   };
 
-  if (now === null) return unknown(result, 'no evaluation instant');
+  if (now === null) return unknown(result, 'bad-query', 'no evaluation instant');
   var until = query.until === undefined ? now + DEFAULT_HORIZON_MS : toInstant(query.until);
-  if (until === null) return unknown(result, 'until is not an instant');
-  if (query.side !== 'L' && query.side !== 'R') return unknown(result, 'side must be L or R');
-  if (!data || !Array.isArray(data.rows)) return unknown(result, 'no schedule data');
+  if (until === null) return unknown(result, 'bad-query', 'until is not an instant');
+  if (query.side !== 'L' && query.side !== 'R') return unknown(result, 'bad-query', 'side must be L or R');
+  if (!data || !Array.isArray(data.rows)) return unknown(result, 'no-data', 'no schedule data');
 
   var rows = [];
   for (var i = 0; i < data.rows.length; i++) {
     var raw = data.rows[i];
     if (!raw || raw.cnn !== String(query.cnn) || raw.cnnrightleft !== query.side) continue;
     var r = readRow(raw);
-    if (!r) return unknown(result, 'row ' + raw.blocksweepid + ' could not be read');
+    if (!r) return unknown(result, 'bad-row', 'row ' + raw.blocksweepid + ' could not be read');
     rows.push(r);
   }
-  if (rows.length === 0) return unknown(result, 'no sweeping rows for CNN ' + query.cnn + ' side ' + query.side);
+  if (rows.length === 0) return unknown(result, 'no-rows', 'no sweeping rows for CNN ' + query.cnn + ' side ' + query.side);
 
   var today = pacificParts(now);
   var todayUtc = Date.UTC(today.year, today.month - 1, today.day);
