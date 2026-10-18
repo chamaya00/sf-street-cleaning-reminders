@@ -433,7 +433,7 @@ function leftNormal(a, b) {
 
 // Every block (CNN) whose centreline lies within `radius` metres of the fix,
 // nearest first: { cnn, rows, coords, distance, side }. A block's centreline
-// is its first row's; one with no usable centreline cannot be found by
+// is the first one among its rows; a block with none cannot be found by
 // position at all.
 function blocksNear(rows, latitude, longitude, radius) {
   var byCnn = {};
@@ -452,7 +452,8 @@ function blocksNear(rows, latitude, longitude, radius) {
   var near = [];
   order.forEach(function (cnn) {
     var block = byCnn[cnn];
-    var coords = readLine(block.rows[0]);
+    var coords = null;
+    for (var r = 0; r < block.rows.length && !coords; r++) coords = readLine(block.rows[r]);
     if (!coords) return;
     var minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
     for (var i = 0; i < coords.length; i++) {
