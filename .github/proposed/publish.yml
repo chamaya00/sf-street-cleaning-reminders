@@ -1,0 +1,49 @@
+name: publish
+
+# Builds the schedule file from the city's SODA2 endpoint and publishes it on
+# GitHub Pages with src/sweeping.js and the Scriptable scripts (ADR 0001, Data
+# and Installs and updates; ADR 0002 for the layout).
+#
+# Proposed by #11 at .github/proposed/publish.yml, to be copied unchanged into
+# .github/workflows/ by a person: no agent may write there.
+#
+# The two `run:` lines are tools/publish.js's COMMANDS. test/site.test.js runs
+# those same strings against a stubbed endpoint, and test/workflow.test.js fails
+# if these lines ever differ from them. The gate does not run the live fetch
+# from the city or the upload to Pages.
+#
+# fetchedAt changes on every run, even when the city's rows have not, so if
+# GitHub disables this schedule after 60 quiet days the phone shows its copy as
+# stale 14 days after the last run.
+
+on:
+  schedule:
+    - cron: '17 11 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: node tools/build-data.js _data/sweeping-data.json
+      - run: node tools/assemble-site.js _data/sweeping-data.json _site
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

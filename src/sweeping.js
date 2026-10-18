@@ -294,8 +294,50 @@ function windowsForSide(data, query) {
   return result;
 }
 
+// ------------------------------------------------------------- the data file
+
+// The format version of the file tools/build-data.js writes (ADR 0002).
+var DATA_FORMAT = 1;
+
+// Turns the published schedule file back into the `data` windowsForSide takes:
+// { fetchedAt, rows }, the rows in SODA2 shape exactly as the city sent them.
+//
+// file: the parsed file, or its text. The file is { format, fetchedAt,
+// rowsUpdatedAt, count, fields, rows }, each row an array in `fields` order,
+// with null where SODA2 left the field out and a `line` LineString stored as
+// its coordinates alone.
+//
+// Anything else - another format version, text that is not JSON, a row that
+// does not fit `fields` - gives { fetchedAt: null, rows: null }, which
+// windowsForSide reports as unknown ("no schedule data"), never as a schedule
+// with no windows.
+function decodeData(file) {
+  var none = { fetchedAt: null, rows: null };
+  if (typeof file === 'string') {
+    try { file = JSON.parse(file); } catch (e) { return none; }
+  }
+  if (!file || typeof file !== 'object' || file.format !== DATA_FORMAT) return none;
+  var fields = file.fields;
+  if (!Array.isArray(fields) || !Array.isArray(file.rows) || typeof file.fetchedAt !== 'string') return none;
+  var rows = [];
+  for (var i = 0; i < file.rows.length; i++) {
+    var values = file.rows[i];
+    if (!Array.isArray(values) || values.length !== fields.length) return none;
+    var row = {};
+    for (var j = 0; j < fields.length; j++) {
+      var v = values[j];
+      if (v === null) continue;
+      row[fields[j]] = fields[j] === 'line' && Array.isArray(v) ? { type: 'LineString', coordinates: v } : v;
+    }
+    rows.push(row);
+  }
+  return { fetchedAt: file.fetchedAt, rows: rows };
+}
+
 module.exports = {
   windowsForSide: windowsForSide,
+  decodeData: decodeData,
+  DATA_FORMAT: DATA_FORMAT,
   pacificParts: pacificParts,
   pacificInstant: pacificInstant,
   HOLIDAYS: HOLIDAYS,
