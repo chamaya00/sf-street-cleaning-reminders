@@ -62,6 +62,18 @@ test('side rule: h 4, d 7.9 is which-side (needs d >= 8)', function () {
   assertWhichSide(resolve(4, 7.9, 'R').spot, 7.9);
 });
 
+// A fix that precise, that far from every centreline, is not on this block:
+// the likeliest reason is a swept block the table has no `line` for. So the
+// side resolves only within the block radius h + 10 m.
+test('side rule: h 4, d 25 is which-side (needs d <= h + 10 = 14)', function () {
+  assertWhichSide(resolve(4, 25, 'R').spot, 25);
+  assertWhichSide(resolve(4, 14.1, 'R').spot, 14.1);
+  var edge = resolve(4, 13.9, 'R').spot;
+  assert.equal(edge.kind, 'side-known');
+  assert.equal(edge.side, 'R');
+  assertOneBlockAt(edge, 13.9);
+});
+
 test('side rule: h 1, d 2.9 is which-side (needs d >= 3)', function () {
   assertWhichSide(resolve(1, 2.9, 'R').spot, 2.9);
 });

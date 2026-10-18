@@ -532,6 +532,8 @@ function readNumber(value) {
 //   missing. Both sides of every one of them are candidates.
 // - 'side-known': one block, and the side rule resolves. Its one candidate
 //   is the side the fix is on. Never for a block whose sideButtons is false.
+//   Never beyond h + 10 m either: a fix that far from every centreline is
+//   likelier on a block the table has no `line` for.
 // - 'which-side': one block, and the side rule does not. Both its sides are
 //   candidates.
 // - 'no-schedule-here', code 'no-rows' or 'bad-row': no candidate has a
@@ -599,7 +601,8 @@ function resolveSpot(data, query) {
     var block = blocks[0];
     spot.cnn = block.cnn;
     var resolves = h !== null && h <= SIDE_MAX_ACCURACY_M &&
-      block.distance >= Math.max(SIDE_ACCURACY_FACTOR * h, SIDE_MIN_DISTANCE_M) && block.sideButtons;
+      block.distance >= Math.max(SIDE_ACCURACY_FACTOR * h, SIDE_MIN_DISTANCE_M) &&
+      block.distance <= spot.radius && block.sideButtons;
     if (resolves) {
       kind = 'side-known';
       spot.side = block.side;
