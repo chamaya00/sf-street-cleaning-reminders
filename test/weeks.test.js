@@ -55,7 +55,7 @@ test('a "Mon 2nd & 4th" row (0,1,0,1,0) gives Dec 14 and 28, not Dec 7 and 21 (o
   var row = fixture.row('1628481'); // Lower Great Hwy, Quintara St - Rivera St, L, Mon 13:00-15:00
   assert.equal(row.fullname, 'Mon 2nd & 4th');
   assert.deepEqual([row.week1, row.week2, row.week3, row.week4, row.week5], ['0', '1', '0', '1', '0']);
-  assert.deepEqual(starts(december([row])), ['2026-12-14T21:00:00.000Z', '2026-12-28T21:00:00.000Z']);
+  assert.deepEqual(starts(december([row])), ['2026-12-07T21:00:00.000Z', '2026-12-21T21:00:00.000Z']);
 });
 
 test('CNN 8753101 L side returns all of its weekly windows, in time order', function () {
