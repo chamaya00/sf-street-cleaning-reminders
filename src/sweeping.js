@@ -1,10 +1,15 @@
-// Street sweeping windows for one block side, as exact instants.
+// Street sweeping windows for one block side, as exact instants, and the
+// block sides a parking fix could be on.
 //
 // The logic module ADR 0001 names. It reads rows in the SODA2 JSON shape of
 // DataSF's table yhqp-riqs (research #3, 4.2: every value a string, a null
 // field left out), and works out a side's upcoming windows in San Francisco
 // time. It applies the week-of-month flags (4.3), the holiday rule (4.4) and
 // the 14-day staleness rule (4.5), and says `unknown` rather than guess.
+//
+// It resolves a fix to a spot with research 5.3's side, block and no-fix
+// rules, measured against the table's own centrelines and nothing else, and
+// says "can't tell" whenever the fix cannot decide.
 //
 // Loaded unchanged by Node's require and by Scriptable's importModule, so it
 // has no dependencies and touches only `module.exports` and the language's own
